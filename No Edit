@@ -1,0 +1,2720 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- CoreGui
+local CoreGui = game:GetService("CoreGui")
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.ResetOnSpawn = false
+
+-- الإطار الأساسي
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 320, 0, 220)
+Frame.Position = UDim2.new(0.5, -160, 0.5, -110)
+Frame.BackgroundColor3 = Color3.fromRGB(10,10,10)
+Frame.BackgroundTransparency = 0.4
+Frame.BorderSizePixel = 0
+Frame.Parent = ScreenGui
+
+local FrameCorner = Instance.new("UICorner", Frame)
+FrameCorner.CornerRadius = UDim.new(0,15)
+
+local FrameStroke = Instance.new("UIStroke", Frame)
+FrameStroke.Thickness = 2
+FrameStroke.Color = Color3.fromRGB(0,0,0)
+
+-- Shadow
+local Shadow = Instance.new("ImageLabel")
+Shadow.Parent = Frame
+Shadow.AnchorPoint = Vector2.new(0.5,0.5)
+Shadow.Position = UDim2.new(0.5,0,0.5,0)
+Shadow.Size = UDim2.new(1,40,1,40)
+Shadow.BackgroundTransparency = 1
+Shadow.Image = "rbxassetid://1316045217"
+Shadow.ImageColor3 = Color3.fromRGB(0,0,0)
+Shadow.ImageTransparency = 0.5
+
+-- العنوان
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1,0,0,40)
+Title.Position = UDim2.new(0,0,0,10)
+Title.BackgroundTransparency = 1
+Title.Text = "Z7F"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 32
+Title.TextColor3 = Color3.fromRGB(255,255,255)
+
+-- Glow للعنوان
+local glowGradientTitle = Instance.new("UIGradient", Title)
+glowGradientTitle.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180,180,180)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+}
+glowGradientTitle.Rotation = 45
+local glowTweenTitle = TweenService:Create(glowGradientTitle, TweenInfo.new(1.2,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,-1,true),{Offset = Vector2.new(1,0)})
+glowGradientTitle.Offset = Vector2.new(-1,0)
+glowTweenTitle:Play()
+
+-- ScrollFrame
+local ScrollFrame = Instance.new("ScrollingFrame", Frame)
+ScrollFrame.Size = UDim2.new(1,0,1,-50)
+ScrollFrame.Position = UDim2.new(0,0,0,50)
+ScrollFrame.CanvasSize = UDim2.new(0,0,3,0)
+ScrollFrame.ScrollBarThickness = 8
+ScrollFrame.BackgroundTransparency = 1
+ScrollFrame.Active = true
+ScrollFrame.Selectable = true
+
+-- صورة اللاعب
+local MidImage = Instance.new("ImageLabel", ScrollFrame)
+MidImage.Size = UDim2.new(0,80,0,80)
+MidImage.Position = UDim2.new(0.5,-40,0,0)
+MidImage.BackgroundTransparency = 1
+MidImage.Image = "rbxassetid://7992557358"
+local MidCorner = Instance.new("UICorner", MidImage)
+MidCorner.CornerRadius = UDim.new(1,0)
+
+-- TextContainer
+local TextContainer = Instance.new("Frame", ScrollFrame)
+TextContainer.Size = UDim2.new(1,0,0,80)
+TextContainer.Position = UDim2.new(0,0,0,80)
+TextContainer.BackgroundTransparency = 1
+
+-- UserLabel
+local UserLabel = Instance.new("TextLabel", TextContainer)
+UserLabel.Size = UDim2.new(1,0,0.3,0)
+UserLabel.Position = UDim2.new(0,0,0,0)
+UserLabel.BackgroundTransparency = 1
+UserLabel.Text = "User"
+UserLabel.Font = Enum.Font.GothamBold
+UserLabel.TextSize = 22
+UserLabel.TextColor3 = Color3.fromRGB(255,255,255)
+UserLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+-- NickLabel
+local NickLabel = Instance.new("TextLabel", TextContainer)
+NickLabel.Size = UDim2.new(1,0,0.3,0)
+NickLabel.Position = UDim2.new(0,0,0.3,0)
+NickLabel.BackgroundTransparency = 1
+NickLabel.Text = "NickName"
+NickLabel.Font = Enum.Font.Gotham
+NickLabel.TextSize = 18
+NickLabel.TextColor3 = Color3.fromRGB(180,180,180)
+NickLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+-- TextBox
+local NickTextBox = Instance.new("TextBox", TextContainer)
+NickTextBox.Size = UDim2.new(0.8,0,0.4,0)
+NickTextBox.Position = UDim2.new(0.1,0,0.6,0)
+NickTextBox.Text = ""
+NickTextBox.PlaceholderText = "لقب/يوزر"
+NickTextBox.ClearTextOnFocus = true
+NickTextBox.Font = Enum.Font.Gotham
+NickTextBox.TextSize = 18
+NickTextBox.TextColor3 = Color3.fromRGB(255,255,255)
+NickTextBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
+NickTextBox.BorderColor3 = Color3.fromRGB(100,100,100)
+NickTextBox.TextXAlignment = Enum.TextXAlignment.Center
+NickTextBox.TextYAlignment = Enum.TextYAlignment.Center
+Instance.new("UICorner", NickTextBox).CornerRadius = UDim.new(0,8)
+
+-- الصورة العلوية (التاج)
+local TopImage = Instance.new("ImageLabel", ScreenGui)
+TopImage.Size = UDim2.new(0,80,0,80)
+TopImage.BackgroundTransparency = 1
+TopImage.ZIndex = 4
+TopImage.Image = "rbxassetid://11835491319"
+Instance.new("UICorner", TopImage).CornerRadius = UDim.new(1,0)
+
+local topImageOffset = Vector2.new(120,-60)
+local function updateTopImagePosition()
+    TopImage.Position = UDim2.new(0.5, topImageOffset.X + (Frame.Position.X.Offset + Frame.Size.X.Offset/2 - 160),
+                                0.5, topImageOffset.Y + (Frame.Position.Y.Offset + Frame.Size.Y.Offset/2 - 110))
+end
+updateTopImagePosition()
+
+-- Table لتتبع الرسائل (Stacked)
+local Notifications = {}
+local function updateNotificationsPositions()
+    for i, notif in ipairs(Notifications) do
+        local targetPos = UDim2.new(1,-260,1,-80 - (i-1)*80)
+        TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Position = targetPos}):Play()
+    end
+end
+
+-- دالة إنشاء رسالة مع Glow للنص
+local function createNotification(titleText, mainText, playerImageId, duration)
+    local Notification = Instance.new("Frame")
+    Notification.Size = UDim2.new(0,300,0,70)
+    Notification.Position = UDim2.new(1,10,1,-80)
+    Notification.BackgroundColor3 = Color3.fromRGB(10,10,10)
+    Notification.BackgroundTransparency = 0.4
+    Notification.BorderSizePixel = 0
+    Notification.Parent = ScreenGui
+
+    local Corner = Instance.new("UICorner", Notification)
+    Corner.CornerRadius = UDim.new(0,15)
+
+    local PlayerImage = Instance.new("ImageLabel", Notification)
+    PlayerImage.Size = UDim2.new(0,50,0,50)
+    PlayerImage.Position = UDim2.new(0,10,0.5,-25)
+    PlayerImage.BackgroundTransparency = 1
+    PlayerImage.Image = playerImageId
+    local ImgCorner = Instance.new("UICorner", PlayerImage)
+    ImgCorner.CornerRadius = UDim.new(1,0)
+
+    local TitleLabel = Instance.new("TextLabel", Notification)
+    TitleLabel.Size = UDim2.new(1,-70,0,25)
+    TitleLabel.Position = UDim2.new(0,60,0,0)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = titleText
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 16
+    TitleLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local TextLabel = Instance.new("TextLabel", Notification)
+    TextLabel.Size = UDim2.new(1,-50,1,-25)
+    TextLabel.Position = UDim2.new(0,65,0,15)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Text = mainText
+    TextLabel.Font = Enum.Font.Gotham
+    TextLabel.TextSize = 18
+    TextLabel.TextColor3 = Color3.fromRGB(200,200,200)
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- إضافة Glow للنص
+    local glowGradientText = Instance.new("UIGradient", TextLabel)
+    glowGradientText.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180,180,180)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    }
+    glowGradientText.Rotation = 45
+    local glowTweenText = TweenService:Create(glowGradientText, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    glowGradientText.Offset = Vector2.new(-1,0)
+    glowTweenText:Play()
+
+    table.insert(Notifications,1,Notification)
+    updateNotificationsPositions()
+
+    TweenService:Create(Notification, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Position = UDim2.new(1,-260,1,-80)}):Play()
+
+    delay(duration, function()
+        TweenService:Create(Notification, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {Position = UDim2.new(1,10,1,-80), BackgroundTransparency = 1}):Play()
+        wait(0.5)
+        Notification:Destroy()
+        for i, v in ipairs(Notifications) do
+            if v == Notification then
+                table.remove(Notifications,i)
+                break
+            end
+        end
+        updateNotificationsPositions()
+    end)
+end
+
+-- اللاعب المستهدف
+local targetedPlayerId = nil
+
+local function showTargetNotification(targetPlayer)
+    local thumb = Players:GetUserThumbnailAsync(targetPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+    createNotification("Z7F SYSTEM","تم استهداف الاعب "..targetPlayer.DisplayName,thumb,5)
+    targetedPlayerId = targetPlayer.UserId
+end
+
+local function showLeaveNotificationIfTargeted(leavingPlayer)
+    if targetedPlayerId and leavingPlayer.UserId == targetedPlayerId then
+        local thumb = Players:GetUserThumbnailAsync(leavingPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+        createNotification("Z7F SYSTEM","لقد خرج الاعب "..leavingPlayer.Name.." من السيرفر",thumb,10)
+        targetedPlayerId = nil
+        UserLabel.Text = "User"
+        NickLabel.Text = "NickName"
+        MidImage.Image = "rbxassetid://7992557358"
+    end
+end
+
+-- بحث سلس ودقيق (حرفين فأكثر)
+NickTextBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local search = NickTextBox.Text:lower()
+    if #search < 2 then
+        targetedPlayerId = nil
+        UserLabel.Text = "User"
+        NickLabel.Text = "NickName"
+        MidImage.Image = "rbxassetid://7992557358"
+        return
+    end
+
+    local foundPlayer = nil
+    for _, plr in pairs(Players:GetPlayers()) do
+        local name = plr.Name:lower()
+        local nick = plr.DisplayName:lower()
+        if string.find(name, search, 1, true) or string.find(nick, search, 1, true) then
+            foundPlayer = plr
+            break
+        end
+    end
+
+    if foundPlayer then
+        MidImage.Image = Players:GetUserThumbnailAsync(foundPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+        UserLabel.Text = foundPlayer.Name
+        NickLabel.Text = foundPlayer.DisplayName
+        showTargetNotification(foundPlayer)
+        targetedPlayerId = foundPlayer.UserId
+    else
+        targetedPlayerId = nil
+        UserLabel.Text = "User"
+        NickLabel.Text = "NickName"
+        MidImage.Image = "rbxassetid://7992557358"
+    end
+end)
+
+-- متابعة خروج اللاعبين
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    showLeaveNotificationIfTargeted(leavingPlayer)
+end)
+
+-- سحب الجياوي
+local dragging = false
+local dragStart, startPos
+local function update(input)
+	local delta = input.Position - dragStart
+	local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	Frame.Position = newPos
+	updateTopImagePosition()
+end
+
+Frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = Frame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then dragging = false end
+		end)
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		update(input)
+	end
+end)
+
+-- Tween دخول الجياوي
+Frame.Position = UDim2.new(0.5,-160,1.2,0)
+TweenService:Create(Frame, TweenInfo.new(1.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+{Position=UDim2.new(0.5,-160,0.5,-110)}):Play()
+
+-- زر إخفاء/إظهار الجياوي + التاج
+local ToggleButton = Instance.new("ImageButton", ScreenGui)
+ToggleButton.Size = UDim2.new(0,50,0,50)
+ToggleButton.Position = UDim2.new(1,-60,0.5,-25)
+ToggleButton.AnchorPoint = Vector2.new(0,0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0,0,0)
+ToggleButton.BackgroundTransparency = 0.6
+ToggleButton.BorderSizePixel = 2
+ToggleButton.BorderColor3 = Color3.fromRGB(0,0,0)
+ToggleButton.Image = "rbxassetid://11835491319"
+local ToggleCorner = Instance.new("UICorner", ToggleButton)
+ToggleCorner.CornerRadius = UDim.new(1,0)
+
+local buttonDragging = false
+local buttonDragStart, buttonStartPos
+ToggleButton.MouseButton1Down:Connect(function(input)
+    buttonDragging = true
+    buttonDragStart = input.Position
+    buttonStartPos = ToggleButton.Position
+    input.Changed:Connect(function()
+        if input.UserInputState == Enum.UserInputState.End then buttonDragging = false end
+    end)
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if buttonDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - buttonDragStart
+        ToggleButton.Position = UDim2.new(buttonStartPos.X.Scale, buttonStartPos.X.Offset + delta.X, buttonStartPos.Y.Scale, buttonStartPos.Y.Offset + delta.Y)
+    end
+end)
+
+ToggleButton.MouseButton1Click:Connect(function()
+    local newState = not Frame.Visible
+    Frame.Visible = newState
+    TopImage.Visible = newState
+end)
+
+local WatchButton = Instance.new("TextButton", ScrollFrame)
+WatchButton.Size = UDim2.new(0.42,0,0,36)
+WatchButton.Position = UDim2.new(0.52,0,0,180)
+WatchButton.Text = "مـشـاهـده"
+WatchButton.Font = Enum.Font.GothamBold
+WatchButton.TextSize = 18
+WatchButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+WatchButton.BackgroundTransparency = 0.5
+WatchButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", WatchButton).CornerRadius = UDim.new(0,10)
+
+-- ⭐ نظام المشاهدة الكامل
+local watching = nil
+local watchingEnabled = false
+
+local defaultColor = Color3.fromRGB(25,25,25)
+local activeColor = Color3.fromRGB(255,255,255)
+
+-- لإنشاء لمعة متحركة
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+local glowGradient, glowTween = nil, nil
+
+local function applyWatching(plr)
+    if not plr or not plr.Character then return end
+    local humanoid = plr.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        workspace.CurrentCamera.CameraSubject = humanoid
+    end
+
+    plr.CharacterAdded:Connect(function(char)
+        if watchingEnabled then
+            repeat task.wait() until char:FindFirstChild("Humanoid")
+            workspace.CurrentCamera.CameraSubject = char:FindFirstChild("Humanoid")
+        end
+    end)
+end
+
+WatchButton.MouseButton1Click:Connect(function()
+    local plr = Players:FindFirstChild(UserLabel.Text)
+    if not plr then return end
+
+    if watchingEnabled then
+        watchingEnabled = false
+        watching = nil
+        WatchButton.BackgroundColor3 = defaultColor
+        if glowGradient then
+            glowGradient:Destroy()
+            glowGradient = nil
+        end
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+        end
+        return
+    end
+
+    watchingEnabled = true
+    watching = plr
+    WatchButton.BackgroundColor3 = activeColor
+    glowGradient, glowTween = createGlow(WatchButton)
+    applyWatching(plr)
+end)
+
+-- إعادة تفعيل المشاهدة بعد الموت تلقائيًا
+player.CharacterAdded:Connect(function(char)
+    if watchingEnabled and watching then
+        repeat task.wait() until watching.Character and watching.Character:FindFirstChild("Humanoid")
+        workspace.CurrentCamera.CameraSubject = watching.Character:FindFirstChild("Humanoid")
+        WatchButton.BackgroundColor3 = activeColor
+        if not glowGradient then
+            glowGradient, glowTween = createGlow(WatchButton)
+        end
+    end
+end)
+
+-- إيقاف المشاهدة عند خروج اللاعب المستهدف
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if watchingEnabled and watching and leavingPlayer == watching then
+        watchingEnabled = false
+        watching = nil
+        WatchButton.BackgroundColor3 = defaultColor
+        if glowGradient then
+            glowGradient:Destroy()
+            glowGradient = nil
+        end
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+        end
+    end
+end)
+
+local TeleportButton = Instance.new("TextButton", ScrollFrame)
+TeleportButton.Size = UDim2.new(0.42,0,0,36)
+TeleportButton.Position = UDim2.new(0.05,0,0,180) -- يسار زر المشاهدة
+TeleportButton.Text = "انـتـقـال"
+TeleportButton.Font = Enum.Font.GothamBold
+TeleportButton.TextSize = 18
+TeleportButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+TeleportButton.BackgroundTransparency = 0.5
+TeleportButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", TeleportButton).CornerRadius = UDim.new(0,10)
+
+-- تأثير لمعة سريعة عند الضغط
+local function flashGlow(button, duration)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    tween.Completed:Connect(function()
+        gradient:Destroy()
+    end)
+end
+
+-- عند الضغط على زر الانتقال
+TeleportButton.MouseButton1Click:Connect(function()
+    local plr = Players:FindFirstChild(UserLabel.Text)
+    if not plr or not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") then return end
+    local targetPos = plr.Character.HumanoidRootPart.Position
+
+    -- تفعيل التليبورت فوراً
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPos + Vector3.new(0,3,0))
+    end
+
+    -- تشغيل لمعة سريعة كزينة فقط
+    flashGlow(TeleportButton,1)
+end)
+
+local BangButton = Instance.new("TextButton", ScrollFrame)
+BangButton.Size = UDim2.new(0.42,0,0,36)
+BangButton.Position = UDim2.new(0.52,0,0,230) -- تحت زر المشاهدة
+BangButton.Text = "بـانـق خـلـفـي"
+BangButton.Font = Enum.Font.GothamBold
+BangButton.TextSize = 18
+BangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+BangButton.BackgroundTransparency = 0.5
+BangButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", BangButton).CornerRadius = UDim.new(0,10)
+
+local bangActive = false
+local heartbeatConnection = nil
+local bangAnimationId = "10714068222"
+local distanceBehind = 0.70
+local verticalOffset = 0
+
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+local bangGlow, bangTween = nil, nil
+local targetPlayer = nil
+
+local function playBangAnimation()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do
+        track:Stop()
+    end
+    local animation = Instance.new("Animation")
+    animation.AnimationId = "rbxassetid://"..bangAnimationId
+    local animTrack = humanoid:LoadAnimation(animation)
+    animTrack.Looped = true
+    animTrack:Play()
+    animTrack:AdjustSpeed(1000)
+end
+
+local function startFollowing()
+    if not targetPlayer or not targetPlayer.Character then return end
+    playBangAnimation()
+    if heartbeatConnection then heartbeatConnection:Disconnect() end
+    heartbeatConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if targetPlayer.Character and player.Character then
+            local targetTorso = targetPlayer.Character:FindFirstChild("UpperTorso") or targetPlayer.Character:FindFirstChild("Torso")
+            local playerHRP = player.Character:FindFirstChild("HumanoidRootPart")
+            if targetTorso and playerHRP then
+                playerHRP.CFrame = targetTorso.CFrame * CFrame.new(0, verticalOffset, distanceBehind)
+            end
+        end
+    end)
+end
+
+local function stopFollowing()
+    if heartbeatConnection then heartbeatConnection:Disconnect() heartbeatConnection = nil end
+    local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do track:Stop() end
+    end
+end
+
+BangButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+    bangActive = not bangActive
+    if bangActive then
+        BangButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        bangGlow, bangTween = createGlow(BangButton)
+        startFollowing()
+    else
+        BangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if bangGlow then bangGlow:Destroy() bangGlow = nil end
+        stopFollowing()
+    end
+end)
+
+-- إعادة تفعيل بعد Respawn
+player.CharacterAdded:Connect(function()
+    task.wait(0.1)
+    if bangActive then startFollowing() end
+end)
+
+-- إيقاف إذا خرج اللاعب المستهدف
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if targetPlayer and leavingPlayer == targetPlayer then
+        bangActive = false
+        BangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if bangGlow then bangGlow:Destroy() bangGlow = nil end
+        stopFollowing()
+        targetPlayer = nil
+    end
+end)
+
+-- تحديث اللاعب المستهدف من التكست بوكس
+NickTextBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local search = NickTextBox.Text:lower()
+    if #search < 2 then targetPlayer = nil return end
+    for _, plr in pairs(Players:GetPlayers()) do
+        if string.find(plr.Name:lower(), search, 1, true) or string.find(plr.DisplayName:lower(), search, 1, true) then
+            targetPlayer = plr
+            break
+        end
+    end
+end)
+
+local FaceBangButton = Instance.new("TextButton", ScrollFrame)
+FaceBangButton.Size = UDim2.new(0.42,0,0,36)
+FaceBangButton.Position = UDim2.new(0.05,0,0,230) -- يسار زر بانق خلفي
+FaceBangButton.Text = "بـانـق وجـه"
+FaceBangButton.Font = Enum.Font.GothamBold
+FaceBangButton.TextSize = 18
+FaceBangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+FaceBangButton.BackgroundTransparency = 0.5
+FaceBangButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", FaceBangButton).CornerRadius = UDim.new(0,10)
+
+-- متغيرات
+local faceBangActive = false
+local faceBangGlow, faceBangTween = nil, nil
+local sucking = false
+local suckAnimTrack = nil
+local currentDistance = 1.5
+local movingIn = true
+local movementSpeed = 0.5
+local minDistance = 0.5
+local maxDistance = 2.5
+
+-- دالة إنشاء Glow (يمكن إعادة استخدامها)
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+-- دالة تحديث حركة "الوجه"
+local function updateSuck()
+    while sucking do
+        local localChar = player.Character
+        if not localChar then game:GetService("RunService").Heartbeat:Wait() continue end
+        local humanoid = localChar:FindFirstChildOfClass("Humanoid")
+        if humanoid and sucking then
+            humanoid.Sit = true
+            if not suckAnimTrack then
+                local animation = Instance.new("Animation")
+                animation.AnimationId = "rbxassetid://2506281703"
+                suckAnimTrack = humanoid:LoadAnimation(animation)
+                suckAnimTrack:Play()
+                suckAnimTrack:AdjustSpeed(1.5)
+            end
+        end
+
+        if targetPlayer and targetPlayer.Character then
+            local humanoidRootPart = localChar:FindFirstChild("HumanoidRootPart")
+            local targetHead = targetPlayer.Character:FindFirstChild("Head")
+            if humanoidRootPart and targetHead then
+                if movingIn then
+                    currentDistance = currentDistance - movementSpeed
+                    if currentDistance <= minDistance then movingIn = false end
+                else
+                    currentDistance = currentDistance + movementSpeed
+                    if currentDistance >= maxDistance then movingIn = true end
+                end
+                local faceDirection = targetHead.CFrame.LookVector
+                local targetPosition = targetHead.Position + (faceDirection * currentDistance)
+                targetPosition = Vector3.new(targetPosition.X, targetHead.Position.Y, targetPosition.Z)
+                humanoidRootPart.CFrame = CFrame.new(targetPosition, targetHead.Position)
+                humanoidRootPart.Velocity = Vector3.new(0,2,0)
+            end
+        end
+
+        game:GetService("RunService").Heartbeat:Wait()
+    end
+
+    -- إيقاف الحركة والانميشن عند الإنهاء
+    local localChar = player.Character
+    if localChar then
+        local humanoid = localChar:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid.Sit = false end
+    end
+    if suckAnimTrack then suckAnimTrack:Stop() suckAnimTrack = nil end
+end
+
+local function startSuck(target)
+    targetPlayer = target
+    sucking = true
+    spawn(updateSuck)
+end
+
+local function stopSuck()
+    sucking = false
+end
+
+-- تفعيل الزر عند الضغط
+FaceBangButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+    faceBangActive = not faceBangActive
+    if faceBangActive then
+        FaceBangButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        faceBangGlow, faceBangTween = createGlow(FaceBangButton)
+        startSuck(targetPlayer)
+    else
+        FaceBangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if faceBangGlow then faceBangGlow:Destroy() faceBangGlow = nil end
+        stopSuck()
+    end
+end)
+
+-- إعادة تفعيل بعد Respawn
+player.CharacterAdded:Connect(function()
+    task.wait(0.1)
+    if faceBangActive then startSuck(targetPlayer) end
+end)
+
+-- إيقاف تلقائي إذا خرج اللاعب المستهدف
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if targetPlayer and leavingPlayer == targetPlayer then
+        faceBangActive = false
+        FaceBangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if faceBangGlow then faceBangGlow:Destroy() faceBangGlow = nil end
+        stopSuck()
+        targetPlayer = nil
+    end
+end)
+
+local HeadSitButton = Instance.new("TextButton", ScrollFrame)
+HeadSitButton.Size = UDim2.new(0.42,0,0,36)
+HeadSitButton.Position = UDim2.new(0.52,0,0,280) -- تحت زر بانق خلفي
+HeadSitButton.Text = "جـلـوس فـوق راسـه"
+HeadSitButton.Font = Enum.Font.GothamBold
+HeadSitButton.TextSize = 18
+HeadSitButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+HeadSitButton.BackgroundTransparency = 0.5
+HeadSitButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", HeadSitButton).CornerRadius = UDim.new(0,10)
+
+-- متغيرات
+local headSitActive = false
+local headSitGlow, headSitTween = nil, nil
+local headSitHeartbeat = nil
+
+-- إنشاء Glow متحرك مثل المشاهدة
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+-- دالة للحصول على Root
+local function GetRoot(plr)
+    return plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+end
+
+-- دالة تشغيل الجلوس على رأس الهدف
+local function startHeadSit(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character then return end
+    if headSitHeartbeat then headSitHeartbeat:Disconnect() end
+    headSitHeartbeat = game:GetService("RunService").Heartbeat:Connect(function()
+        pcall(function()
+            local plrRoot = GetRoot(player)
+            if not plrRoot then return end
+            local targetHead = targetPlayer.Character:FindFirstChild("Head")
+            if not targetHead then return end
+
+            -- منع تغيير السرعة
+            if not plrRoot:FindFirstChild("BreakVelocity") then
+                local TempV = Instance.new("BodyVelocity")
+                TempV.Velocity = Vector3.new(0,0,0)
+                TempV.MaxForce = Vector3.new(1e5,1e5,1e5)
+                TempV.Name = "BreakVelocity"
+                TempV.Parent = plrRoot
+            end
+
+            -- جلوس على رأس الهدف
+            player.Character.Humanoid.Sit = true
+            plrRoot.CFrame = targetHead.CFrame * CFrame.new(0,2,0)
+            plrRoot.Velocity = Vector3.new(0,0,0)
+        end)
+    end)
+end
+
+-- إيقاف الجلوس وإزالة الحماية
+local function stopHeadSit()
+    if headSitHeartbeat then headSitHeartbeat:Disconnect() headSitHeartbeat = nil end
+    local plrRoot = GetRoot(player)
+    if plrRoot and plrRoot:FindFirstChild("BreakVelocity") then
+        plrRoot.BreakVelocity:Destroy()
+    end
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.Sit = false
+    end
+end
+
+-- حدث الضغط على الزر
+HeadSitButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+    headSitActive = not headSitActive
+    if headSitActive then
+        HeadSitButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        headSitGlow, headSitTween = createGlow(HeadSitButton)
+        startHeadSit(targetPlayer)
+    else
+        HeadSitButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if headSitGlow then headSitGlow:Destroy() headSitGlow = nil end
+        stopHeadSit()
+    end
+end)
+
+-- إعادة تفعيل بعد Respawn
+player.CharacterAdded:Connect(function()
+    task.wait(0.1)
+    if headSitActive and targetPlayer then startHeadSit(targetPlayer) end
+end)
+
+-- إيقاف تلقائي إذا خرج اللاعب المستهدف
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if targetPlayer and leavingPlayer == targetPlayer then
+        headSitActive = false
+        HeadSitButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if headSitGlow then headSitGlow:Destroy() headSitGlow = nil end
+        stopHeadSit()
+        targetPlayer = nil
+    end
+end)
+
+local BackpackButton = Instance.new("TextButton", ScrollFrame)
+BackpackButton.Size = UDim2.new(0.42,0,0,36)
+BackpackButton.Position = UDim2.new(0.05,0,0,280) -- يسار زر HeadSit
+BackpackButton.Text = "حـقـيـبـة ظـهـر"
+BackpackButton.Font = Enum.Font.GothamBold
+BackpackButton.TextSize = 18
+BackpackButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+BackpackButton.BackgroundTransparency = 0.5
+BackpackButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", BackpackButton).CornerRadius = UDim.new(0,10)
+
+local backpackActive = false
+local backpackGlow, backpackTween = nil, nil
+local backpackHeartbeat = nil
+
+-- استخدام نفس دالة Glow الموجودة سابقاً
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+-- دالة تشغيل الجلوس على ظهر الهدف
+local function startBackpack(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character then return end
+    if backpackHeartbeat then backpackHeartbeat:Disconnect() end
+
+    backpackHeartbeat = game:GetService("RunService").Heartbeat:Connect(function()
+        pcall(function()
+            local root = GetRoot(player)
+            if not root then return end
+            local target = targetPlayer.Character
+            if not target then return end
+
+            -- منع تغيير السرعة
+            if not root:FindFirstChild("BreakVelocity") then
+                local TempV = Instance.new("BodyVelocity")
+                TempV.Velocity = Vector3.new(0,0,0)
+                TempV.MaxForce = Vector3.new(1e5,1e5,1e5)
+                TempV.Name = "BreakVelocity"
+                TempV.Parent = root
+            end
+
+            local targetTorso = target:FindFirstChild("Torso") or target:FindFirstChild("UpperTorso")
+            if targetTorso then
+                player.Character.Humanoid.Sit = true
+                root.CFrame = targetTorso.CFrame * CFrame.new(0,0.5,1.2) * CFrame.Angles(0, math.rad(180), 0)
+                root.Velocity = Vector3.new(0,0,0)
+            end
+        end)
+    end)
+end
+
+-- دالة إيقاف الجلوس على ظهر اللاعب
+local function stopBackpack()
+    if backpackHeartbeat then backpackHeartbeat:Disconnect() backpackHeartbeat = nil end
+    local root = GetRoot(player)
+    if root and root:FindFirstChild("BreakVelocity") then
+        root.BreakVelocity:Destroy()
+    end
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.Sit = false
+    end
+end
+
+-- حدث الضغط على الزر
+BackpackButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+    backpackActive = not backpackActive
+    if backpackActive then
+        BackpackButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        backpackGlow, backpackTween = createGlow(BackpackButton)
+        startBackpack(targetPlayer)
+    else
+        BackpackButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if backpackGlow then backpackGlow:Destroy() backpackGlow = nil end
+        stopBackpack()
+    end
+end)
+
+-- إعادة تفعيل بعد Respawn
+player.CharacterAdded:Connect(function()
+    task.wait(0.1)
+    if backpackActive and targetPlayer then startBackpack(targetPlayer) end
+end)
+
+-- إيقاف تلقائي إذا خرج اللاعب المستهدف
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if targetPlayer and leavingPlayer == targetPlayer then
+        backpackActive = false
+        BackpackButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if backpackGlow then backpackGlow:Destroy() backpackGlow = nil end
+        stopBackpack()
+        targetPlayer = nil
+    end
+end)
+
+local HandcuffButton = Instance.new("TextButton", ScrollFrame)
+HandcuffButton.Size = UDim2.new(0.42,0,0,36)
+HandcuffButton.Position = UDim2.new(0.05,0,0,330) -- تحت زر HeadSit
+HandcuffButton.Text = "امـسـاك بـكـلـبـش"
+HandcuffButton.Font = Enum.Font.GothamBold
+HandcuffButton.TextSize = 18
+HandcuffButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+HandcuffButton.BackgroundTransparency = 0.5
+HandcuffButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", HandcuffButton).CornerRadius = UDim.new(0,10)
+
+-- تأثير اللمعة مثل زر الانتقال
+local function flashGlow(button, duration)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    tween.Completed:Connect(function() gradient:Destroy() end)
+end
+
+HandcuffButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end -- يعتمد على نفس targetPlayer من TextBox
+
+    flashGlow(HandcuffButton, 1) -- لمعة قصيرة عند الضغط
+
+    local LocalPlayer = Players.LocalPlayer
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    local toolNames = {
+        "كلبشه","كلبشة","كلبش عيد الرعب","كلبشة الملاك",
+        "كلبش","كلبشة سبونج بوب","كلبشة ذهبيه","كلبشه ذهبيبه",
+        "كلبشة ملاك"
+    }
+
+    local function isWantedTool(tool)
+        local name = tool.Name:lower()
+        for _, n in ipairs(toolNames) do
+            if string.find(name, n) then return true end
+        end
+        if string.find(name, "handcuff") or string.find(name, "cuff") then return true end
+        return false
+    end
+
+    local tool
+    for _, item in ipairs(LocalPlayer.Backpack:GetChildren()) do
+        if isWantedTool(item) then tool = item break end
+    end
+    if not tool then
+        for _, item in ipairs(char:GetChildren()) do
+            if item:IsA("Tool") and isWantedTool(item) then
+                tool = item break
+            end
+        end
+    end
+    if not tool then return end
+
+    tool.Parent = char
+
+    local remoteName = "\217\131\217\132\216\168\216\180\217\135"
+    local remoteFolder = char:FindFirstChild(remoteName)
+    if remoteFolder and remoteFolder:FindFirstChild("RemoteEvent") then
+        local targetHRP = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if targetHRP then
+            remoteFolder.RemoteEvent:FireServer(targetHRP)
+        end
+    end
+end)
+
+local FreezeButton = Instance.new("TextButton", ScrollFrame)
+FreezeButton.Size = UDim2.new(0.42,0,0,36)
+FreezeButton.Position = UDim2.new(0.52,0,0,330) -- يمين زر Handcuff
+FreezeButton.Text = "تـجـميـد بـكـلـبـش"
+FreezeButton.Font = Enum.Font.GothamBold
+FreezeButton.TextSize = 18
+FreezeButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+FreezeButton.BackgroundTransparency = 0.5
+FreezeButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", FreezeButton).CornerRadius = UDim.new(0,10)
+
+-- تأثير اللمعة مثل زر الانتقال
+local function flashGlow(button, duration)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    tween.Completed:Connect(function() gradient:Destroy() end)
+end
+
+FreezeButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end -- يعتمد على نفس targetPlayer من TextBox
+
+    flashGlow(FreezeButton, 1) -- لمعة قصيرة عند الضغط
+
+    local LocalPlayer = Players.LocalPlayer
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    local toolNames = {
+        "كلبشه","كلبشة","كلبش عيد الرعب","كلبشة الملاك",
+        "كلبش","كلبشة سبونج بوب","كلبشة ذهبيه","كلبشه ذهبيبه",
+        "كلبشة ملاك"
+    }
+
+    local function isWantedTool(tool)
+        local name = tool.Name:lower()
+        for _, n in ipairs(toolNames) do
+            if string.find(name, n) then return true end
+        end
+        if string.find(name, "handcuff") or string.find(name, "cuff") then return true end
+        return false
+    end
+
+    local tool
+    for _, item in ipairs(LocalPlayer.Backpack:GetChildren()) do
+        if isWantedTool(item) then tool = item break end
+    end
+    if not tool then
+        for _, item in ipairs(char:GetChildren()) do
+            if item:IsA("Tool") and isWantedTool(item) then
+                tool = item break
+            end
+        end
+    end
+    if not tool then return end
+
+    tool.Parent = char
+
+    local remoteName = "\217\131\217\132\216\168\216\180\217\135"
+    local remoteFolder = char:FindFirstChild(remoteName)
+    if remoteFolder and remoteFolder:FindFirstChild("RemoteEvent") then
+        local targetHRP = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if targetHRP then
+            remoteFolder.RemoteEvent:FireServer(targetHRP)
+        end
+    end
+
+    -- الكود الإضافي لتجميد اللاعب
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    task.wait(0.7)
+    ReplicatedStorage.Events.SendMessage:FireServer(".char")
+
+    task.wait(1.5)
+    ReplicatedStorage.Events.SendMessage:FireServer(".unchar")
+end)
+
+local CopyStrongButton = Instance.new("TextButton", ScrollFrame)
+CopyStrongButton.Size = UDim2.new(0.42,0,0,36)
+CopyStrongButton.Position = UDim2.new(0.05,0,0,380) -- تحت زر Freeze
+CopyStrongButton.Text = "نـسـخ قـوي"
+CopyStrongButton.Font = Enum.Font.GothamBold
+CopyStrongButton.TextSize = 18
+CopyStrongButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+CopyStrongButton.BackgroundTransparency = 0.5
+CopyStrongButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", CopyStrongButton).CornerRadius = UDim.new(0,10)
+
+local copyActive = false
+local copyGlow, copyTween = nil, nil
+local copyLoop = nil
+
+-- دالة Glow مثل باقي الأزرار
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+local function startCopyStrong()
+    if not targetPlayer then return end
+    -- تفعيل المشاهدة
+    watchingEnabled = true
+    watching = targetPlayer
+    applyWatching(targetPlayer)
+
+    -- تكرار إرسال الكود كل 4 ثواني
+    copyLoop = game:GetService("RunService").Heartbeat:Connect(function(delta)
+        if copyActive then
+            if tick() % 4 < delta then
+                local plrName = targetPlayer.Name
+                local prefix = #plrName >= 3 and string.sub(plrName,1,3) or plrName
+                local args = {
+                    ". .neon "..prefix.." .paint "..prefix.." pk .size "..prefix.." 3 .height "..prefix.." 0.1 .aura "..prefix.." .title "..prefix.." \217\133\216\175\217\139\216\185\217\137\217\136\216\179\217\139"
+                }
+                pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("HDAdminHDClient"):WaitForChild("Signals"):WaitForChild("RequestCommandSilent"):InvokeServer(unpack(args))
+                end)
+            end
+        end
+    end)
+end
+
+local function stopCopyStrong()
+    copyActive = false
+    if copyGlow then copyGlow:Destroy() copyGlow = nil end
+    if copyLoop then copyLoop:Disconnect() copyLoop = nil end
+    -- إعادة الكاميرا للشخص نفسه
+    watchingEnabled = false
+    watching = nil
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+    end
+end
+
+CopyStrongButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+    copyActive = not copyActive
+    if copyActive then
+        CopyStrongButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        copyGlow, copyTween = createGlow(CopyStrongButton)
+        startCopyStrong()
+    else
+        CopyStrongButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        stopCopyStrong()
+    end
+end)
+
+-- إيقاف تلقائي عند خروج اللاعب المستهدف
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if targetPlayer and leavingPlayer == targetPlayer then
+        stopCopyStrong()
+        targetPlayer = nil
+    end
+end)
+
+local CopyFunnyButton = Instance.new("TextButton", ScrollFrame)
+CopyFunnyButton.Size = UDim2.new(0.42,0,0,36)
+CopyFunnyButton.Position = UDim2.new(0.52,0,0,380) -- يمين زر Copy Strong
+CopyFunnyButton.Text = "نـسخ طقطقه"
+CopyFunnyButton.Font = Enum.Font.GothamBold
+CopyFunnyButton.TextSize = 18
+CopyFunnyButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+CopyFunnyButton.BackgroundTransparency = 0.5
+CopyFunnyButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", CopyFunnyButton).CornerRadius = UDim.new(0,10)
+
+local funnyActive = false
+local funnyGlow, funnyTween = nil, nil
+local funnyLoop = nil
+
+-- دالة Glow
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+local function startCopyFunny()
+    if not targetPlayer then return end
+
+    -- تكرار إرسال الكود كل 6 ثواني
+    funnyLoop = game:GetService("RunService").Heartbeat:Connect(function(delta)
+        if funnyActive then
+            if tick() % 6 < delta then
+                local plrName = targetPlayer.Name
+                local prefix = #plrName >= 3 and string.sub(plrName,1,3) or plrName
+                local args = {
+                    ".dog "..prefix.." .jp "..prefix.." 0 .titlepk "..prefix.." \218\175\217\132\216\168 \217\133\216\183\217\139\217\138\216\185\217\139"
+                }
+                pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("HDAdminHDClient"):WaitForChild("Signals"):WaitForChild("RequestCommandSilent"):InvokeServer(unpack(args))
+                end)
+            end
+        end
+    end)
+end
+
+local function stopCopyFunny()
+    funnyActive = false
+    if funnyGlow then funnyGlow:Destroy() funnyGlow = nil end
+    if funnyLoop then funnyLoop:Disconnect() funnyLoop = nil end
+end
+
+CopyFunnyButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+    funnyActive = not funnyActive
+    if funnyActive then
+        CopyFunnyButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        funnyGlow, funnyTween = createGlow(CopyFunnyButton)
+        startCopyFunny()
+    else
+        CopyFunnyButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        stopCopyFunny()
+    end
+end)
+
+-- إيقاف تلقائي عند خروج اللاعب المستهدف
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if targetPlayer and leavingPlayer == targetPlayer then
+        stopCopyFunny()
+        targetPlayer = nil
+    end
+end)
+
+local CopyStrong2Button = Instance.new("TextButton", ScrollFrame)
+CopyStrong2Button.Size = UDim2.new(0.42,0,0,36)
+CopyStrong2Button.Position = UDim2.new(0.05,0,0,430) -- تحت زر نسخ طقطقه
+CopyStrong2Button.Text = "نـسـخ جـيـد"
+CopyStrong2Button.Font = Enum.Font.GothamBold
+CopyStrong2Button.TextSize = 18
+CopyStrong2Button.BackgroundColor3 = Color3.fromRGB(25,25,25)
+CopyStrong2Button.BackgroundTransparency = 0.5
+CopyStrong2Button.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", CopyStrong2Button).CornerRadius = UDim.new(0,10)
+
+local copyStrong2Active = false
+local copyStrong2Glow, copyStrong2Tween = nil, nil
+local copyStrong2Loop = nil
+
+-- دالة Glow مثل باقي الأزرار
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+local function startCopyStrong2()
+    if not targetPlayer then return end
+
+    copyStrong2Loop = game:GetService("RunService").Heartbeat:Connect(function(delta)
+        if copyStrong2Active then
+            if tick() % 4 < delta then
+                local plrName = targetPlayer.Name
+                local prefix = #plrName >= 3 and string.sub(plrName,1,3) or plrName
+                local args = {
+                    ".size "..prefix.." 3 .fat "..prefix.." .box "..prefix.." .sit "..prefix.." .neon "..prefix.." .paint "..prefix.." pk .shine "..prefix.." .titlepk "..prefix.." \217\133\217\139\217\137\216\175\217\139\216\185\217\137\217\136\217\139\216\179\217\145"
+                }
+                pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("HDAdminHDClient"):WaitForChild("Signals"):WaitForChild("RequestCommandSilent"):InvokeServer(unpack(args))
+                end)
+            end
+        end
+    end)
+end
+
+local function stopCopyStrong2()
+    copyStrong2Active = false
+    if copyStrong2Glow then copyStrong2Glow:Destroy() copyStrong2Glow = nil end
+    if copyStrong2Loop then copyStrong2Loop:Disconnect() copyStrong2Loop = nil end
+end
+
+CopyStrong2Button.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+    copyStrong2Active = not copyStrong2Active
+    if copyStrong2Active then
+        CopyStrong2Button.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        copyStrong2Glow, copyStrong2Tween = createGlow(CopyStrong2Button)
+        startCopyStrong2()
+    else
+        CopyStrong2Button.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        stopCopyStrong2()
+    end
+end)
+
+-- إيقاف تلقائي عند خروج اللاعب المستهدف
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if targetPlayer and leavingPlayer == targetPlayer then
+        stopCopyStrong2()
+        targetPlayer = nil
+    end
+end)
+
+local CopyBeautifulButton = Instance.new("TextButton", ScrollFrame)
+CopyBeautifulButton.Size = UDim2.new(0.42,0,0,36)
+CopyBeautifulButton.Position = UDim2.new(0.52,0,0,430) -- يمين زر نسخ قوي الأخير
+CopyBeautifulButton.Text = "نـسـخ حـلـو"
+CopyBeautifulButton.Font = Enum.Font.GothamBold
+CopyBeautifulButton.TextSize = 18
+CopyBeautifulButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+CopyBeautifulButton.BackgroundTransparency = 0.5
+CopyBeautifulButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", CopyBeautifulButton).CornerRadius = UDim.new(0,10)
+
+local copyBeautifulActive = false
+local copyBeautifulGlow = nil
+local copyBeautifulTween = nil
+local copyBeautifulLoop = nil
+
+---------------------------------------------------------------------
+-- 🔥 دالة اللمعة Glow
+---------------------------------------------------------------------
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+
+    local tween = TweenService:Create(
+        gradient,
+        TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true),
+        {Offset = Vector2.new(1,0)}
+    )
+    tween:Play()
+    return gradient, tween
+end
+
+---------------------------------------------------------------------
+-- 🚀 تشغيل نسخ حلو
+---------------------------------------------------------------------
+local function startCopyBeautiful()
+    if not targetPlayer then return end
+
+    copyBeautifulLoop = task.spawn(function()
+        while copyBeautifulActive and targetPlayer do
+            local name = targetPlayer.Name
+            local prefix = (#name >= 3 and string.sub(name,1,3)) or name
+
+            local args = {
+                ". .size "..prefix.." 3 .height "..prefix.." 0.1 .neon "..prefix.." .paint "..prefix.." pk .sit "..prefix..
+                " .jp "..prefix.." 0 .aura "..prefix.." .fat "..prefix.." .titlepk "..prefix.." Z7F \217\129\216\173\217\139\217\137\217\132\217\139\217\138\217\139\217\139\217\139"
+            }
+
+            pcall(function()
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("HDAdminHDClient")
+                    :WaitForChild("Signals")
+                    :WaitForChild("RequestCommandSilent")
+                    :InvokeServer(unpack(args))
+            end)
+
+            task.wait(4)
+        end
+    end)
+end
+
+---------------------------------------------------------------------
+-- 🛑 إيقاف نسخ حلو
+---------------------------------------------------------------------
+local function stopCopyBeautiful()
+    copyBeautifulActive = false
+
+    if copyBeautifulGlow then 
+        copyBeautifulGlow:Destroy() 
+        copyBeautifulGlow = nil 
+    end
+
+    if copyBeautifulLoop then
+        copyBeautifulLoop = nil
+    end
+
+    CopyBeautifulButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+end
+
+---------------------------------------------------------------------
+-- 👆 الضغط على زر نسخ حلو
+---------------------------------------------------------------------
+CopyBeautifulButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+
+    copyBeautifulActive = not copyBeautifulActive
+
+    if copyBeautifulActive then
+        CopyBeautifulButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        copyBeautifulGlow, copyBeautifulTween = createGlow(CopyBeautifulButton)
+        startCopyBeautiful()
+    else
+        stopCopyBeautiful()
+    end
+end)
+
+---------------------------------------------------------------------
+-- ❗ إيقاف تلقائي عند خروج المستهدف
+---------------------------------------------------------------------
+Players.PlayerRemoving:Connect(function(p)
+    if targetPlayer == p then
+        stopCopyBeautiful()
+        targetPlayer = nil
+    end
+end)
+
+local CopyExtendButton = Instance.new("TextButton", ScrollFrame)
+CopyExtendButton.Size = UDim2.new(0.42,0,0,36)
+CopyExtendButton.Position = UDim2.new(0.52,0,0,480) -- تحت زر نسخ حلو
+CopyExtendButton.Text = "نـسـخ تـطـويـل"
+CopyExtendButton.Font = Enum.Font.GothamBold
+CopyExtendButton.TextSize = 18
+CopyExtendButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+CopyExtendButton.BackgroundTransparency = 0.5
+CopyExtendButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", CopyExtendButton).CornerRadius = UDim.new(0,10)
+
+local copyExtendActive = false
+local copyExtendGlow = nil
+local copyExtendLoop = nil
+
+---------------------------------------------------------------------
+-- 🔥 دالة اللمعة Glow (نفس الموجود)
+---------------------------------------------------------------------
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+
+    local tween = TweenService:Create(
+        gradient,
+        TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true),
+        {Offset = Vector2.new(1,0)}
+    )
+    tween:Play()
+    return gradient, tween
+end
+
+---------------------------------------------------------------------
+-- 🚀 تشغيل نسخ تطويل
+---------------------------------------------------------------------
+local function startCopyExtend()
+    if not targetPlayer then return end
+
+    copyExtendLoop = task.spawn(function()
+        while copyExtendActive and targetPlayer do
+            local name = targetPlayer.Name
+            local prefix = (#name >= 4 and string.sub(name,1,4)) or name
+
+            local args = {
+                ". .char "..prefix.." .neon "..prefix.." .size "..prefix.." 3 .sit "..prefix.." .jp "..prefix.." 0 .height "..prefix.." 3 .fast "..prefix
+            }
+
+            pcall(function()
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("HDAdminHDClient")
+                    :WaitForChild("Signals")
+                    :WaitForChild("RequestCommandSilent")
+                    :InvokeServer(unpack(args))
+            end)
+
+            task.wait(4)
+        end
+    end)
+end
+
+---------------------------------------------------------------------
+-- 🛑 إيقاف نسخ تطويل
+---------------------------------------------------------------------
+local function stopCopyExtend()
+    copyExtendActive = false
+
+    if copyExtendGlow then 
+        copyExtendGlow:Destroy() 
+        copyExtendGlow = nil 
+    end
+
+    if copyExtendLoop then
+        copyExtendLoop = nil
+    end
+
+    CopyExtendButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+end
+
+---------------------------------------------------------------------
+-- 👆 الضغط على زر نسخ تطويل
+---------------------------------------------------------------------
+CopyExtendButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+
+    copyExtendActive = not copyExtendActive
+
+    if copyExtendActive then
+        CopyExtendButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        copyExtendGlow, _ = createGlow(CopyExtendButton)
+        startCopyExtend()
+    else
+        stopCopyExtend()
+    end
+end)
+
+---------------------------------------------------------------------
+-- ❗ إيقاف تلقائي عند خروج المستهدف
+---------------------------------------------------------------------
+Players.PlayerRemoving:Connect(function(p)
+    if targetPlayer == p then
+        stopCopyExtend()
+        targetPlayer = nil
+    end
+end)
+
+local CopyFatButton = Instance.new("TextButton", ScrollFrame)
+CopyFatButton.Size = UDim2.new(0.42,0,0,36)
+CopyFatButton.Position = UDim2.new(0.05,0,0,480) -- يسار زر نسخ تطويل مع مسافة حلوة
+CopyFatButton.Text = "نـسـخ تـسـمـيـن"
+CopyFatButton.Font = Enum.Font.GothamBold
+CopyFatButton.TextSize = 18
+CopyFatButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+CopyFatButton.BackgroundTransparency = 0.5
+CopyFatButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", CopyFatButton).CornerRadius = UDim.new(0,10)
+
+local copyFatActive = false
+local copyFatGlow = nil
+local copyFatLoop = nil
+
+---------------------------------------------------------------------
+-- 🔥 دالة اللمعة Glow (نفس الموجود)
+---------------------------------------------------------------------
+-- يمكن إعادة استخدام نفس createGlow للزرين
+---------------------------------------------------------------------
+-- 🚀 تشغيل نسخ تسمين
+---------------------------------------------------------------------
+local function startCopyFat()
+    if not targetPlayer then return end
+
+    copyFatLoop = task.spawn(function()
+        while copyFatActive and targetPlayer do
+            local name = targetPlayer.Name
+            local prefix = (#name >= 4 and string.sub(name,1,4)) or name
+
+            local args = {
+                ". .char "..prefix.." ardaomeroglucooj .neon "..prefix.." .paint "..prefix.." pk .sit "..prefix.." .jp "..prefix.." 0 .fat "..prefix.." .thin "..prefix
+            }
+
+            pcall(function()
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("HDAdminHDClient")
+                    :WaitForChild("Signals")
+                    :WaitForChild("RequestCommandSilent")
+                    :InvokeServer(unpack(args))
+            end)
+
+            task.wait(4)
+        end
+    end)
+end
+
+---------------------------------------------------------------------
+-- 🛑 إيقاف نسخ تسمين
+---------------------------------------------------------------------
+local function stopCopyFat()
+    copyFatActive = false
+
+    if copyFatGlow then 
+        copyFatGlow:Destroy() 
+        copyFatGlow = nil 
+    end
+
+    if copyFatLoop then
+        copyFatLoop = nil
+    end
+
+    CopyFatButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+end
+
+---------------------------------------------------------------------
+-- 👆 الضغط على زر نسخ تسمين
+---------------------------------------------------------------------
+CopyFatButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+
+    copyFatActive = not copyFatActive
+
+    if copyFatActive then
+        CopyFatButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        copyFatGlow, _ = createGlow(CopyFatButton)
+        startCopyFat()
+    else
+        stopCopyFat()
+    end
+end)
+
+---------------------------------------------------------------------
+-- ❗ إيقاف تلقائي عند خروج المستهدف
+---------------------------------------------------------------------
+Players.PlayerRemoving:Connect(function(p)
+    if targetPlayer == p then
+        stopCopyFat()
+        targetPlayer = nil
+    end
+end)
+
+local CopyThinButton = Instance.new("TextButton", ScrollFrame)
+CopyThinButton.Size = UDim2.new(0.42,0,0,36)
+CopyThinButton.Position = UDim2.new(0.52,0,0,530) -- تحت زر نسخ تطويل بمسافة متناسقة
+CopyThinButton.Text = "نـسـخ تـنـحـيـف"
+CopyThinButton.Font = Enum.Font.GothamBold
+CopyThinButton.TextSize = 18
+CopyThinButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+CopyThinButton.BackgroundTransparency = 0.5
+CopyThinButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", CopyThinButton).CornerRadius = UDim.new(0,10)
+
+local copyThinActive = false
+local copyThinGlow = nil
+local copyThinLoop = nil
+
+---------------------------------------------------------------------
+-- 🔥 دالة اللمعة Glow (نفس الموجود)
+---------------------------------------------------------------------
+-- يمكن إعادة استخدام createGlow نفسها لكل الأزرار
+
+---------------------------------------------------------------------
+-- 🚀 تشغيل نسخ تنحيف
+---------------------------------------------------------------------
+local function startCopyThin()
+    if not targetPlayer then return end
+
+    copyThinLoop = task.spawn(function()
+        while copyThinActive and targetPlayer do
+            local name = targetPlayer.Name
+            local prefix = (#name >= 4 and string.sub(name,1,4)) or name
+
+            local args = {
+                ".neon "..prefix.." .fast "..prefix.." .size "..prefix.." 2 .paint "..prefix.." pk .sit "..prefix.." .thin "..prefix.." .shine "..prefix
+            }
+
+            pcall(function()
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("HDAdminHDClient")
+                    :WaitForChild("Signals")
+                    :WaitForChild("RequestCommandSilent")
+                    :InvokeServer(unpack(args))
+            end)
+
+            task.wait(4)
+        end
+    end)
+end
+
+---------------------------------------------------------------------
+-- 🛑 إيقاف نسخ تنحيف
+---------------------------------------------------------------------
+local function stopCopyThin()
+    copyThinActive = false
+
+    if copyThinGlow then 
+        copyThinGlow:Destroy() 
+        copyThinGlow = nil 
+    end
+
+    if copyThinLoop then
+        copyThinLoop = nil
+    end
+
+    CopyThinButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+end
+
+---------------------------------------------------------------------
+-- 👆 الضغط على زر نسخ تنحيف
+---------------------------------------------------------------------
+CopyThinButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+
+    copyThinActive = not copyThinActive
+
+    if copyThinActive then
+        CopyThinButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        copyThinGlow, _ = createGlow(CopyThinButton)
+        startCopyThin()
+    else
+        stopCopyThin()
+    end
+end)
+
+---------------------------------------------------------------------
+-- ❗ إيقاف تلقائي عند خروج المستهدف
+---------------------------------------------------------------------
+Players.PlayerRemoving:Connect(function(p)
+    if targetPlayer == p then
+        stopCopyThin()
+        targetPlayer = nil
+    end
+end)
+
+local CopyAntiHackButton = Instance.new("TextButton", ScrollFrame)
+CopyAntiHackButton.Size = UDim2.new(0.42,0,0,36)
+CopyAntiHackButton.Position = UDim2.new(0.05,0,0,530) -- تحت زر نسخ تسمين مع مسافة متناسقة
+CopyAntiHackButton.Text = "نـسـخ مـضـاد هـاك"
+CopyAntiHackButton.Font = Enum.Font.GothamBold
+CopyAntiHackButton.TextSize = 18
+CopyAntiHackButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+CopyAntiHackButton.BackgroundTransparency = 0.5
+CopyAntiHackButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", CopyAntiHackButton).CornerRadius = UDim.new(0,10)
+
+local copyAntiHackActive = false
+local copyAntiHackGlow = nil
+local copyAntiHackLoop = nil
+
+---------------------------------------------------------------------
+-- 🔥 دالة Glow (يمكن إعادة استخدام createGlow)
+---------------------------------------------------------------------
+
+---------------------------------------------------------------------
+-- 🚀 تشغيل نسخ مضاد هاك
+---------------------------------------------------------------------
+local function startCopyAntiHack()
+    if not targetPlayer then return end
+
+    copyAntiHackLoop = task.spawn(function()
+        while copyAntiHackActive and targetPlayer do
+            local name = targetPlayer.Name
+            local prefix = (#name >= 3 and string.sub(name,1,3)) or name
+
+            local args = {
+                ".size "..prefix.." 3 .height "..prefix.." 1 .fat "..prefix.." .thin "..prefix.." .sit "..prefix.." .neon "..prefix.." .paint "..prefix.." pk"
+            }
+
+            pcall(function()
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("HDAdminHDClient")
+                    :WaitForChild("Signals")
+                    :WaitForChild("RequestCommandSilent")
+                    :InvokeServer(unpack(args))
+            end)
+
+            task.wait(3) -- كل ٣ ثواني
+        end
+    end)
+end
+
+---------------------------------------------------------------------
+-- 🛑 إيقاف نسخ مضاد هاك
+---------------------------------------------------------------------
+local function stopCopyAntiHack()
+    copyAntiHackActive = false
+
+    if copyAntiHackGlow then 
+        copyAntiHackGlow:Destroy() 
+        copyAntiHackGlow = nil 
+    end
+
+    if copyAntiHackLoop then
+        copyAntiHackLoop = nil
+    end
+
+    CopyAntiHackButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+end
+
+---------------------------------------------------------------------
+-- 👆 الضغط على زر نسخ مضاد هاك
+---------------------------------------------------------------------
+CopyAntiHackButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+
+    copyAntiHackActive = not copyAntiHackActive
+
+    if copyAntiHackActive then
+        CopyAntiHackButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        copyAntiHackGlow, _ = createGlow(CopyAntiHackButton)
+        startCopyAntiHack()
+    else
+        stopCopyAntiHack()
+    end
+end)
+
+---------------------------------------------------------------------
+-- ❗ إيقاف تلقائي عند خروج المستهدف
+---------------------------------------------------------------------
+Players.PlayerRemoving:Connect(function(p)
+    if targetPlayer == p then
+        stopCopyAntiHack()
+        targetPlayer = nil
+    end
+end)
+
+local DoubleReButton = Instance.new("TextButton", ScrollFrame)
+DoubleReButton.Size = UDim2.new(0.42,0,0,36)
+DoubleReButton.Position = UDim2.new(0.52,0,0,580) -- تحت زر نسخ تنحيف مع نفس المسافة
+DoubleReButton.Text = "دبـل ري"
+DoubleReButton.Font = Enum.Font.GothamBold
+DoubleReButton.TextSize = 18
+DoubleReButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+DoubleReButton.BackgroundTransparency = 0.5
+DoubleReButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", DoubleReButton).CornerRadius = UDim.new(0,10)
+
+local doubleReActive = false
+local doubleReGlow = nil
+local doubleReLoop = nil
+
+---------------------------------------------------------------------
+-- 🚀 تشغيل دبـل ري
+---------------------------------------------------------------------
+local function startDoubleRe()
+    if not targetPlayer then return end
+
+    doubleReLoop = task.spawn(function()
+        while doubleReActive and targetPlayer do
+
+            local name = targetPlayer.Name
+            local prefix = (#name >= 4 and string.sub(name,1,4)) or name
+
+            local args = {
+                ".re "..prefix.." .re "..prefix
+            }
+
+            pcall(function()
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("HDAdminHDClient")
+                    :WaitForChild("Signals")
+                    :WaitForChild("RequestCommandSilent")
+                    :InvokeServer(unpack(args))
+            end)
+
+            task.wait(2)
+        end
+    end)
+end
+
+---------------------------------------------------------------------
+-- 🛑 إيقاف دبـل ري
+---------------------------------------------------------------------
+local function stopDoubleRe()
+    doubleReActive = false
+
+    if doubleReGlow then 
+        doubleReGlow:Destroy() 
+        doubleReGlow = nil 
+    end
+
+    if doubleReLoop then
+        doubleReLoop = nil
+    end
+
+    DoubleReButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+end
+
+---------------------------------------------------------------------
+-- 👆 الضغط على زر دبـل ري
+---------------------------------------------------------------------
+DoubleReButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+
+    doubleReActive = not doubleReActive
+
+    if doubleReActive then
+        DoubleReButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        doubleReGlow, _ = createGlow(DoubleReButton)
+        startDoubleRe()
+    else
+        stopDoubleRe()
+    end
+end)
+
+---------------------------------------------------------------------
+-- ❗ إيقاف تلقائي عند خروج المستهدف
+---------------------------------------------------------------------
+Players.PlayerRemoving:Connect(function(p)
+    if targetPlayer == p then
+        stopDoubleRe()
+        targetPlayer = nil
+    end
+end)
+
+local DoubleAuraButton = Instance.new("TextButton", ScrollFrame)
+DoubleAuraButton.Size = UDim2.new(0.42,0,0,36)
+DoubleAuraButton.Position = UDim2.new(0.05,0,0,580) -- يسار زر دبـل ري مع مسافة حلوة
+DoubleAuraButton.Text = "دبل اورا"
+DoubleAuraButton.Font = Enum.Font.GothamBold
+DoubleAuraButton.TextSize = 18
+DoubleAuraButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+DoubleAuraButton.BackgroundTransparency = 0.5
+DoubleAuraButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", DoubleAuraButton).CornerRadius = UDim.new(0,10)
+
+local doubleAuraActive = false
+local doubleAuraGlow = nil
+local doubleAuraLoop = nil
+
+---------------------------------------------------------------------
+-- 🚀 تشغيل دبل اورا
+---------------------------------------------------------------------
+local function startDoubleAura()
+    if not targetPlayer then return end
+
+    doubleAuraLoop = task.spawn(function()
+        while doubleAuraActive and targetPlayer do
+            local name = targetPlayer.Name
+            local prefix = (#name >= 3 and string.sub(name,1,3)) or name
+
+            local args = {
+                ".aura "..prefix.." .aura "..prefix
+            }
+
+            pcall(function()
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("HDAdminHDClient")
+                    :WaitForChild("Signals")
+                    :WaitForChild("RequestCommandSilent")
+                    :InvokeServer(unpack(args))
+            end)
+
+            task.wait(3)
+        end
+    end)
+end
+
+---------------------------------------------------------------------
+-- 🛑 إيقاف دبل اورا
+---------------------------------------------------------------------
+local function stopDoubleAura()
+    doubleAuraActive = false
+
+    if doubleAuraGlow then 
+        doubleAuraGlow:Destroy() 
+        doubleAuraGlow = nil 
+    end
+
+    if doubleAuraLoop then
+        doubleAuraLoop = nil
+    end
+
+    DoubleAuraButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+end
+
+---------------------------------------------------------------------
+-- 👆 الضغط على زر دبل اورا
+---------------------------------------------------------------------
+DoubleAuraButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+
+    doubleAuraActive = not doubleAuraActive
+
+    if doubleAuraActive then
+        DoubleAuraButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        doubleAuraGlow, _ = createGlow(DoubleAuraButton)
+        startDoubleAura()
+    else
+        stopDoubleAura()
+    end
+end)
+
+---------------------------------------------------------------------
+-- ❗ إيقاف تلقائي عند خروج المستهدف
+---------------------------------------------------------------------
+Players.PlayerRemoving:Connect(function(p)
+    if targetPlayer == p then
+        stopDoubleAura()
+        targetPlayer = nil
+    end
+end)
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+-----------------------------------------------------
+-- قائمة أسماء المحميين
+-----------------------------------------------------
+local ProtectedUsers = {
+	["1il5f"] = true,
+	["1il5i"] = true,
+	["sj3zx"] = true,
+	["awr_9351156"] = true,
+	["eyad51533"] = true,
+	["ababahbada"] = true
+}
+
+-----------------------------------------------------
+-- التكست بوكس
+-----------------------------------------------------
+local NickTextBox = NickTextBox or script.Parent:FindFirstChild("NickTextBox")
+
+-----------------------------------------------------
+-- دالة إظهار رسالة حماية
+-----------------------------------------------------
+local function ShowProtectedMessage(username)
+	local gui = Instance.new("ScreenGui", game.CoreGui)
+	gui.ResetOnSpawn = false
+
+	local baseWidth = 200
+	local extraWidth = math.clamp(#username*8,0,200)
+	local frameWidth = baseWidth + extraWidth
+
+	local frame = Instance.new("Frame", gui)
+	frame.Size = UDim2.new(0, frameWidth,0,70)
+	frame.Position = UDim2.new(1, frameWidth,1,-120)
+	frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+	frame.BackgroundTransparency = 0.4
+	frame.BorderSizePixel = 0
+	Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
+
+	local icon = Instance.new("ImageLabel", frame)
+	icon.Size = UDim2.new(0,55,0,55)
+	icon.Position = UDim2.new(0,8,0.5,-27)
+	icon.BackgroundTransparency = 1
+	icon.Image = "rbxassetid://13722469288"
+
+	local txt = Instance.new("TextLabel", frame)
+	txt.Size = UDim2.new(1, -70,1,0)
+	txt.Position = UDim2.new(0, 68,0,0)
+	txt.BackgroundTransparency = 1
+	txt.Font = Enum.Font.GothamBold
+	txt.TextSize = 18
+	txt.TextColor3 = Color3.fromRGB(255,255,255)
+	txt.TextWrapped = true
+	txt.Text = "الاعـب ("..username..") محمي من مطور السكربت"
+
+	local gradient = Instance.new("UIGradient", txt)
+	gradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(180,180,180)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,255,255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(180,180,180))
+	})
+	gradient.Offset = Vector2.new(-1,0)
+
+	local tweenGlow = TweenService:Create(
+		gradient,
+		TweenInfo.new(1.4, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true),
+		{Offset = Vector2.new(1,0)}
+	)
+	tweenGlow:Play()
+
+	TweenService:Create(
+		frame,
+		TweenInfo.new(0.35, Enum.EasingStyle.Quad),
+		{Position = UDim2.new(1,-frameWidth,1,-120)}
+	):Play()
+
+	task.delay(7,function()
+		local out = TweenService:Create(
+			frame,
+			TweenInfo.new(0.35, Enum.EasingStyle.Quad),
+			{Position = UDim2.new(1, frameWidth,1,-120)}
+		)
+		out:Play()
+		out.Completed:Connect(function()
+			gui:Destroy()
+		end)
+	end)
+end
+
+-----------------------------------------------------
+-- هل اللاعب موجود في السيرفر؟
+-----------------------------------------------------
+local function IsProtectedUserInServer(name)
+	for _,plr in ipairs(Players:GetPlayers()) do
+		if plr.Name:lower() == name:lower() then
+			return true
+		end
+	end
+	return false
+end
+
+-----------------------------------------------------
+-- فحص منع الإدخال
+-----------------------------------------------------
+local function ShouldBlockInput(input)
+	if input == "" then return false end
+	input = input:lower()
+
+	-- ✨ يمنع فقط من حرفين وفوق
+	if #input < 2 then return false end
+
+	local blocked = false
+
+	for username,_ in pairs(ProtectedUsers) do
+		if IsProtectedUserInServer(username) then
+
+			local plr = Players:FindFirstChild(username)
+			local unameLower = username:lower()
+
+			-- ✨ الفحص الجديد (يمنع أي جزء من الاسم)
+			if unameLower:find(input) then
+				ShowProtectedMessage(username)
+				blocked = true
+			end
+
+			if plr and plr.DisplayName:lower():find(input) then
+				ShowProtectedMessage(username)
+				blocked = true
+			end
+		end
+	end
+
+	return blocked
+end
+
+-----------------------------------------------------
+-- حماية التكست بوكس
+-----------------------------------------------------
+if NickTextBox then
+	NickTextBox:GetPropertyChangedSignal("Text"):Connect(function()
+		local txt = NickTextBox.Text
+		if ShouldBlockInput(txt) then
+			NickTextBox.Text = ""
+		end
+	end)
+end
+
+-----------------------------------------------------
+-- حماية الاستهداف الخارجي
+-----------------------------------------------------
+_G.IsProtected = function(target)
+	if not target then return false end
+	target = target:lower()
+
+	-- ✨ يمنع فقط من حرفين وفوق
+	if #target < 2 then return false end
+
+	local blocked = false
+
+	for uname,_ in pairs(ProtectedUsers) do
+		if IsProtectedUserInServer(uname) then
+
+			if uname:lower():find(target) then
+				ShowProtectedMessage(uname)
+				blocked = true
+			end
+
+			local pl = Players:FindFirstChild(uname)
+			if pl and pl.DisplayName:lower():find(target) then
+				ShowProtectedMessage(uname)
+				blocked = true
+			end
+		end
+	end
+
+	return blocked
+end
+
+_G.ProtectToolClick = function(target)
+	return _G.IsProtected(target)
+end
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- 🔹 رسالة تغيير العنوان (ترسل فور تفعيل السكربت)
+task.spawn(function()
+	local args = {
+		".titlebk me Z7F ON TOP"
+	}
+	pcall(function()
+		ReplicatedStorage:WaitForChild("Events"):WaitForChild("SendMessage"):FireServer(unpack(args))
+	end)
+end)
+
+-- 🔹 الرسالة الثانية: ترسل بعد ثواني قليلة من تفعيل السكربت
+task.delay(5, function() -- يمكن تعديل الوقت حسب ما تحب
+	local args = {
+		"Z7F~THE~BEST~SCRIPT"
+	}
+	pcall(function()
+		ReplicatedStorage:WaitForChild("Events"):WaitForChild("SendMessage"):FireServer(unpack(args))
+	end)
+end)
+
+-- 🔹 الرسالة الثالثة: بعد 3 دقائق، ثم تتكرر كل 10 دقائق
+task.delay(180, function() -- 180 ثانية = 3 دقائق
+	local function sendThirdMessage()
+		local args = {
+			"#ScRiPt ! Z7F ! TOP1#"
+		}
+		pcall(function()
+			ReplicatedStorage:WaitForChild("Events"):WaitForChild("SendMessage"):FireServer(unpack(args))
+		end)
+	end
+
+	sendThirdMessage() -- أول إرسال بعد 3 دقائق
+	while true do
+		task.wait(600) -- 600 ثانية = 10 دقائق
+		sendThirdMessage()
+	end
+end)
+
+-- 🔹 الرسالة الرابعة: بعد 15 دقيقة من تفعيل السكربت، ثم تتكرر كل 20 دقيقة بعد مرور 8 دقائق إضافية
+task.delay(900, function() -- 900 ثانية = 15 دقيقة
+	local function sendFourthMessage()
+		local args = {
+			"<iUse-Script-Z7F>\226\128\157by zMz"
+		}
+		pcall(function()
+			ReplicatedStorage:WaitForChild("Events"):WaitForChild("SendMessage"):FireServer(unpack(args))
+		end)
+	end
+
+	sendFourthMessage() -- أول إرسال بعد 15 دقيقة
+
+	task.delay(480, function() -- بعد 8 دقائق من أول إرسال للرسالة الرابعة
+		while true do
+			task.wait(1200) -- 1200 ثانية = 20 دقيقة
+			sendFourthMessage()
+		end
+	end)
+end)
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+
+-----------------------------------------------------
+-- 🔹 إنشاء شاشة البداية
+-----------------------------------------------------
+local screenGui = Instance.new("ScreenGui")
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game.CoreGui
+
+-- خلفية سوداء شفافة
+local bg = Instance.new("Frame", screenGui)
+bg.Size = UDim2.new(1,0,1,0)
+bg.Position = UDim2.new(0,0,0,0)
+bg.BackgroundColor3 = Color3.fromRGB(0,0,0)
+bg.BackgroundTransparency = 1
+
+-- الصورة تغطي الشاشة
+local img = Instance.new("ImageLabel", bg)
+img.Size = UDim2.new(1,0,1,0)
+img.Position = UDim2.new(0,0,0,0)
+img.BackgroundTransparency = 1
+img.Image = "rbxassetid://16264019547"
+img.ImageTransparency = 1
+
+-- نص في منتصف الشاشة
+local label = Instance.new("TextLabel", bg)
+label.Size = UDim2.new(0.8,0,0.2,0)
+label.Position = UDim2.new(0.1,0,0.4,0)
+label.BackgroundTransparency = 1
+label.Font = Enum.Font.GothamBold
+label.TextSize = 48
+label.TextColor3 = Color3.fromRGB(255,255,255)
+label.Text = "Z7F ON TOP"
+label.TextTransparency = 1
+label.TextStrokeTransparency = 0.7
+label.TextScaled = true
+
+-- لمعة بسيطة على النص
+local gradient = Instance.new("UIGradient", label)
+gradient.Rotation = 0
+gradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+})
+gradient.Offset = Vector2.new(-1,0)
+local tweenGlow = TweenService:Create(
+	gradient,
+	TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true),
+	{Offset = Vector2.new(1,0)}
+)
+tweenGlow:Play()
+
+-- تشغيل الموسيقى
+local sound = Instance.new("Sound", bg)
+sound.SoundId = "rbxassetid://14145620056"
+sound.Volume = 1
+sound:Play()
+
+-----------------------------------------------------
+-- 🔹 تأثير Fade In للصورة والنص
+-----------------------------------------------------
+local fadeInTween = TweenService:Create(bg, TweenInfo.new(1.5), {BackgroundTransparency = 0})
+local imgTween = TweenService:Create(img, TweenInfo.new(1.5), {ImageTransparency = 0})
+local labelTween = TweenService:Create(label, TweenInfo.new(1.5), {TextTransparency = 0})
+
+fadeInTween:Play()
+imgTween:Play()
+labelTween:Play()
+
+-----------------------------------------------------
+-- 🔹 بعد 10 ثواني Fade Out ثم إزالة الشاشة
+-----------------------------------------------------
+task.delay(5, function()
+	local fadeOutTween = TweenService:Create(bg, TweenInfo.new(1.5), {BackgroundTransparency = 1})
+	local imgOutTween = TweenService:Create(img, TweenInfo.new(1.5), {ImageTransparency = 1})
+	local labelOutTween = TweenService:Create(label, TweenInfo.new(1.5), {TextTransparency = 1})
+
+	fadeOutTween:Play()
+	imgOutTween:Play()
+	labelOutTween:Play()
+
+	task.delay(1.5, function()
+		screenGui:Destroy()
+		-- بعد انتهاء الشاشة نبدأ السكربت الأصلي هنا
+		print("Z7F INTRO")
+		-- مثال: _G.StartScript() -- ضع كود السكربت هنا
+	end)
+end)
+
+-- ═════════════════════════════════════════
+-- Z7F ON TOP - النسخة المحدثة مع أداة الاستهداف الفخمة
+-- ═════════════════════════════════════════
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CoreGui = game:GetService("CoreGui")
+local player = Players.LocalPlayer
+
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Name = "Z7F_GUI"
+
+
+
+
+-- ================== أداة الاستهداف الجديدة الفخمة ==================
+local function CreateTargetTool()
+    if player.Backpack:FindFirstChild("Z7F Target") or (player.Character and player.Character:FindFirstChild("Z7F Target")) then
+        return
+    end
+
+    local tool = Instance.new("Tool")
+    tool.Name = "Z7F | استهداف"
+    tool.RequiresHandle = false
+    tool.CanBeDropped = false
+    tool.ToolTip = "اضغط على الاعب - Z7F ON TOP"
+    tool.Parent = player.Backpack
+
+    -- الصورة الخاصة في الشنطة (فخمة جدًا)
+    local icon = Instance.new("ImageLabel")
+    icon.Size = UDim2.new(1,0,1,0)
+    icon.BackgroundTransparency = 1
+    icon.Image = "rbxassetid://17487722188"  -- الآيدي اللي طلبت + صورة رهيبة
+    icon.Parent = tool
+
+    tool.Equipped:Connect(function(mouse)
+        mouse.Icon = "rbxassetid://17487722188"
+
+        mouse.Button1Down:Connect(function()
+            local target = mouse.Target
+            if not target then return end
+
+            local char = target:FindFirstAncestorWhichIsA("Model")
+            if not char then return end
+
+            local targetPlr = Players:GetPlayerFromCharacter(char)
+            if not targetPlr or targetPlr == player then return 
+end
+
+            -- تحديث الـ GUI الأصلي
+            NickTextBox.Text = targetPlr.Name
+            UserLabel.Text = targetPlr.Name
+            NickLabel.Text = targetPlr.DisplayName
+
+            local thumb = Players:GetUserThumbnailAsync(targetPlr.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+            MidImage.Image = thumb
+
+            -- إشعار فخم جديد تحت يمين الشاشة
+            local noti = Instance.new("Frame")
+            noti.Size = UDim2.new(0, 360, 0, 100)
+            noti.Position = UDim2.new(1, 380, 1, -130)
+            noti.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            noti.BackgroundTransparency = 0.4
+            noti.BorderSizePixel = 0
+            noti.Parent = ScreenGui
+
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(0, 20)
+            corner.Parent = noti
+
+            local stroke = Instance.new("UIStroke")
+            stroke.Thickness = 2
+            stroke.Color = Color3.fromRGB(255, 215, 0)
+            stroke.Transparency = 0.3
+            stroke.Parent = noti
+
+            -- صورة اللاعب دائرية
+            local head = Instance.new("ImageLabel")
+            head.Size = UDim2.new(0, 70, 0, 70)
+            head.Position = UDim2.new(0, 15, 0.5, -35)
+            head.BackgroundTransparency = 1
+            head.Image = thumb
+            head.Parent = noti
+            Instance.new("UICorner", head).CornerRadius = UDim.new(1,0)
+
+            -- النص
+            local txt = Instance.new("TextLabel")
+            txt.Size = UDim2.new(1, -100, 1, 0)
+            txt.Position = UDim2.new(0, 95, 0, 0)
+            txt.BackgroundTransparency = 1
+            txt.Text = "تم استهداف الاعب\n@"..targetPlr.DisplayName
+            txt.TextColor3 = Color3.fromRGB(255, 255, 255)
+            txt.Font = Enum.Font.GothamBold
+            txt.TextSize = 22
+            txt.TextXAlignment = Enum.TextXAlignment.Left
+            txt.TextYAlignment = Enum.TextYAlignment.Center
+            txt.Parent = noti
+
+            -- لمعة ذهبية على النص
+            local grad = Instance.new("UIGradient", txt)
+            grad.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 220, 100)),
+                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 240, 200)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 220, 100))
+            }
+            grad.Offset = Vector2.new(-1,0)
+            TweenService:Create(grad, TweenInfo.new(1.6, Enum.EasingStyle.Linear, -1, true), {Offset = Vector2.new(1,0)}):Play()
+
+            -- دخول أنيق من اليمين
+            TweenService:Create(noti, TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Position = UDim2.new(1, -380, 1, -130)
+            }):Play()
+
+            -- اختفاء بعد 4.5 ثواني
+            task.delay(4.5, function()
+                TweenService:Create(noti, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {
+                    Position = UDim2.new(1, 380, 1, -130)
+                }):Play()
+                task.delay(0.7, function()
+                    noti:Destroy()
+                end)
+            end)
+        end)
+    end)
+
+    -- لو مات ورجع = الأداة ترجع له تلقائي
+    player.CharacterAdded:Connect(function()
+        task.wait(2)
+        CreateTargetTool()
+    end)
+end
+
+-- تشغيل الأداة فور تشغيل السكربت
+CreateTargetTool()
+
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+
+-- 🛑 قائمة المحظورين
+local BannedUsers = {
+
+local BannedUsers = {
+	["TM_704"] = true,
+    ["704_TM"] = true,
+    ["704_TMMA1"] = true,
+    ["Si07Ac"] = true,
+    ["FM7_5"] = true,
+    ["dc_vt11"] = true,
+    ["m_avig"] = true,
+    ["7_rgh1"] = true,
+    ["Jdvdhvsbx"] = true,
+    ["user here"] = true,
+    ["user here"] = true,
+    ["user here"] = true,
+}
+
+-----------------------------------------------------
+-- 🛑 فحص إذا اللاعب محظور
+-----------------------------------------------------
+if BannedUsers[lp.Name] then
+	
+	-- GUI مانع تشغيل السكربت
+	local gui = Instance.new("ScreenGui")
+	gui.Parent = game.CoreGui
+	gui.ResetOnSpawn = false
+
+	-- الخلفية (الصورة)
+	local bg = Instance.new("ImageLabel", gui)
+	bg.Size = UDim2.new(1,0,1,0)
+	bg.Position = UDim2.new(0,0,0,0)
+	bg.BackgroundTransparency = 1
+	bg.Image = "rbxassetid://8991722426"
+
+	-- النص
+	local txt = Instance.new("TextLabel", bg)
+	txt.Size = UDim2.new(1,0,1,0)
+	txt.Position = UDim2.new(0,0,0,0)
+	txt.BackgroundTransparency = 1
+	txt.Font = Enum.Font.GothamBold
+	txt.TextSize = 32
+	txt.TextColor3 = Color3.fromRGB(255,0,0)
+	txt.TextWrapped = true
+	txt.Text = 
+		"عذراً ، لايمكنك تشغيل السكربت لانك من قائمة المحظورين\n\n" ..
+		"رسالة من المطور :\n" ..
+		"( بنعالي يازبال محروم من سكربتي واحلم انك تشغله ياكلب بنعالي يلا ختفو )"
+
+	-- منع السكربت من التنفيذ نهائياً
+	while true do task.wait(1e9) end
+	return
+end
+
+
+-----------------------------------------------------
+-- ✅ إذا لم يكن محظور → فعّل fixMovement مباشرة
+-----------------------------------------------------
+
+local function fixMovement()
+    local char = lp.Character
+    if not char then return end
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+
+    hum.AutoRotate = true
+    hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+    hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
+
+    while hum.Parent do
+        hum:ChangeState(Enum.HumanoidStateType.Running)
+        hum.Sit = true
+        task.wait(0.1)
+    end
+end
+
+lp.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    fixMovement()
+end)
+
+if lp.Character then
+    task.wait(0.5)
+    fixMovement()
+end
+
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+local mouse = lp:GetMouse()
+
+-------------------------------------------------------------
+-- 🛡️ قائمة اليوزرات المحمية (نفس اللي تستخدمها فوق)
+-------------------------------------------------------------
+
+local ProtectedUsers = {
+	["1il5f"] = true,
+	["1il5i"] = true,
+	["sj3zx"] = true,
+	["awr_9351156"] = true,
+	["eyad51533"] = true,
+	["ababahbada"] = true,
+	["eyad51533_bot"] = true,
+	["eyad51533_bot1"] = true,
+	["eyad51533_bot123456"] = true,
+	["Rx22177"] = true,
+	["awr_9351156BOT"] = true,
+	["User Here"] = true
+}
+
+-------------------------------------------------------------
+-- 🎒 إنشاء الأداة
+-------------------------------------------------------------
+local tool = Instance.new("Tool")
+tool.RequiresHandle = false
+tool.Name = "Z7F Selector"
+tool.Parent = lp:WaitForChild("Backpack")
+
+-- للأبديت بعد الريست
+local cloneTool = tool:Clone()
+cloneTool.Parent = lp:WaitForChild("StarterGear")
+
+-------------------------------------------------------------
+-- 🔥 أيقونة الشنطة
+-------------------------------------------------------------
+tool.TextureId = "rbxassetid://94017498041531"
+
+-------------------------------------------------------------
+-- 🌟 دالة: عرض رسالة حماية إذا حاول يستهدف محمي
+-------------------------------------------------------------
+local function ShowProtected()
+    local gui = Instance.new("ScreenGui", game.CoreGui)
+    gui.IgnoreGuiInset = true
+
+    local frame = Instance.new("Frame", gui)
+    frame.Size = UDim2.new(0,330,0,80)
+    frame.Position = UDim2.new(1,-350,1,-120)
+    frame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    frame.BackgroundTransparency = 0.3
+    frame.BorderSizePixel = 0
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
+
+    local img = Instance.new("ImageLabel", frame)
+    img.Size = UDim2.new(0,55,0,55)
+    img.Position = UDim2.new(0,10,0.5,-27)
+    img.BackgroundTransparency = 1
+    img.Image = "rbxassetid://13722469288"
+
+    local txt = Instance.new("TextLabel", frame)
+    txt.Size = UDim2.new(1,-80,1,0)
+    txt.Position = UDim2.new(0,70,0,0)
+    txt.BackgroundTransparency = 1
+    txt.TextColor3 = Color3.fromRGB(255,255,255)
+    txt.TextSize = 18
+    txt.Font = Enum.Font.GothamBold
+    txt.TextWrapped = true
+    txt.Text = "هذا اللاعب محمي من مطور السكربت"
+
+    -- تأثير دخول
+    frame.Position = UDim2.new(1,50,1,-120)
+    frame:TweenPosition(UDim2.new(1,-350,1,-120),"Out","Quad",0.4,true)
+
+    task.delay(7,function()
+        pcall(function()
+            frame:TweenPosition(UDim2.new(1,50,1,-120),"In","Quad",0.4,true)
+            task.wait(0.4)
+            gui:Destroy()
+        end)
+    end)
+end
+
+-------------------------------------------------------------
+-- 🎯 لما يستخدم الأداة ويضغط على لاعب
+-------------------------------------------------------------
+tool.Activated:Connect(function()
+    local target = mouse.Target
+    if not target then return end
+
+    local plr = Players:GetPlayerFromCharacter(target.Parent)
+    if not plr then return end
+
+    ---------------------------------------------------------
+    -- منع استهداف المحميين
+    ---------------------------------------------------------
+    if Protected[plr.Name:lower()] then
+        ShowProtected()
+        return
+    end
+
+    ---------------------------------------------------------
+    -- ✔ تعيين اللاعب المستهدف داخل سكربتك الأساسي
+    ---------------------------------------------------------
+    targetPlayer = plr
+
+    ---------------------------------------------------------
+    -- ✔ تعيين التكست بوكس
+    ---------------------------------------------------------
+    if NickTextBox then
+        NickTextBox.Text = plr.Name
+    end
+
+    ---------------------------------------------------------
+    -- ✔ تحديث صورة اللاعب إذا موجودة داخل GUI
+    ---------------------------------------------------------
+    if TargetImage then
+        TargetImage.Image = Players:GetUserThumbnailAsync(
+            plr.UserId,
+            Enum.ThumbnailType.HeadShot,
+            Enum.ThumbnailSize.Size420x420
+        )
+    end
+
+    ---------------------------------------------------------
+    -- ✔ تحديث لقب اللاعب إذا عندك لابل للقب
+    ---------------------------------------------------------
+    if TargetDisplayName then
+        TargetDisplayName.Text = plr.DisplayName
+    end
+end)
