@@ -44,32 +44,43 @@ local function executeOnTarget(targetPlayer, commandType, ...)
     
     -- تنفيذ الأمر بناءً على النوع
     if commandType == "say" then
-        -- أمر .say يرسل الرسالة مباشرة
+        -- هنا نفترض أن SendMessage هو الحدث الذي يرسل الرسالة إلى السيرفر ليتم إرسالها كرسالة عامة
+        -- ... هي الرسالة التي سيتم إرسالها
         SendMessage:FireServer(...)
         
+    -- أمر .3mk تم إزالته بالكامل من هنا ليتم إرساله مرة واحدة فقط في معالج حدث الدردشة
+        
     elseif commandType == "f7lk" then
-        -- أمر .f7lk يرسل رسالة معينة
+        -- هنا نفترض أن .f7lk هو أمر يرسل رسالة معينة إلى السيرفر
+        -- الرسالة الافتراضية: "فحًىًلًي @"..senderPlayer.DisplayName.." 🥺"
+        -- ... هو اسم اللاعب المرسل للأمر
         local senderDisplayName = select(1, ...)
         SendMessage:FireServer("فحًىًلًي @"..senderDisplayName.." 🥺")
         
     elseif commandType == "spam" then
-        -- أمر .spam: يفترض أن السكريبت الأصلي كان يستخدم SendMessage لتنفيذ الأمر
+        -- هنا نفترض أن هناك دالة startSpamFor موجودة في السكريبت الأصلي
         local spamMsg = select(1, ...)
-        -- يتم إرسال الأمر والهدف والرسالة إلى السيرفر
-        SendMessage:FireServer(".spam", targetPlayer.Name, spamMsg)
+        if targetPlayer:GetAttribute("ScriptUser") then
+            -- يجب أن تكون startSpamFor دالة معرفة في مكان آخر من السكريبت الأصلي
+            -- startSpamFor(targetPlayer, spamMsg) 
+        end
         
     elseif commandType == "unspam" then
-        -- أمر .unspam: يفترض أن السكريبت الأصلي كان يستخدم SendMessage لتنفيذ الأمر
-        SendMessage:FireServer(".unspam", targetPlayer.Name)
+        -- هنا نفترض أن هناك دالة stopSpamFor موجودة في السكريبت الأصلي
+        if targetPlayer:GetAttribute("ScriptUser") then
+            -- stopSpamFor(targetPlayer)
+        end
         
     elseif commandType == "kick" then
-        -- أمر .kick: يفترض أن السكريبت الأصلي كان يستخدم SendMessage لتنفيذ الأمر
         local reason = select(1, ...)
-        SendMessage:FireServer(".kick", targetPlayer.Name, reason)
+        if targetPlayer:GetAttribute("ScriptUser") then
+            -- targetPlayer:Kick(reason)
+        end
         
     elseif commandType == "bring" then
-        -- أمر .bring: يفترض أن السكريبت الأصلي كان يستخدم SendMessage لتنفيذ الأمر
-        SendMessage:FireServer(".bring", targetPlayer.Name)
+        if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            -- targetPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(3,0,3)
+        end
     end
 end
 
@@ -96,22 +107,31 @@ local function processCommand(senderPlayer, command, commandType, targetPart, ..
     end
     
     -- تنفيذ الأمر على جميع الأهداف المحددة
+    -- **ملاحظة: أمر .3mk لا يتم تنفيذه هنا، بل يتم التحقق من وجود هدف صالح فقط.**
     for _, target in ipairs(targets) do
         if commandType == "f7lk" then
+            -- أمر .f7lk يحتاج اسم مرسل الأمر
             executeOnTarget(target, commandType, senderPlayer.DisplayName)
         elseif commandType == "say" then
+            -- أمر .say يحتاج الرسالة
             local message = select(1, ...)
             executeOnTarget(target, commandType, message)
         elseif commandType == "spam" then
+            -- أمر .spam يحتاج الرسالة
             local spamMsg = select(1, ...)
             executeOnTarget(target, commandType, spamMsg)
         elseif commandType == "kick" then
+            -- أمر .kick يحتاج السبب
             local reason = select(1, ...)
             executeOnTarget(target, commandType, reason)
         elseif commandType == "bring" then
+            -- أمر .bring
             executeOnTarget(target, commandType)
         end
     end
+    
+    -- بالنسبة لأمر .3mk، نستخدم processCommand فقط للتحقق من وجود هدف صالح
+    -- لذلك، لا حاجة لإضافة شرط خاص هنا، فقط نرجع hasValidTarget
     
     return hasValidTarget
 end
@@ -154,12 +174,13 @@ ChattedEvent.OnClientEvent:Connect(function(senderPlayer, command)
         if targetPart == "" or message == "" then return end
         processCommand(senderPlayer, command, "say", targetPart, message)
         
-    -- الأمر .3mk (يرسل الرسالة مرة واحدة فقط)
+    -- الأمر .3mk (تم تعديله ليرسل الرسالة مرة واحدة فقط)
     elseif cmd == ".3mk" then
         if targetPart == "" then return end
         
-        -- نستخدم processCommand فقط للتحقق من وجود هدف صالح
-        local hasValidTarget = processCommand(senderPlayer, command, "3mk_check", targetPart)
+        -- نستخدم processCommand فقط للتحقق من وجود هدف صالح.
+        -- لا يتم تمرير أي نوع أمر حقيقي لـ .3mk، فقط نعتمد على القيمة المرجعة.
+        local hasValidTarget = processCommand(senderPlayer, command, "check_target_only", targetPart)
         
         -- إذا تم العثور على هدف صالح (أو "all" وكان هناك لاعبون)، يتم إرسال الرسالة مرة واحدة
         if hasValidTarget then
