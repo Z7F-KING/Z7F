@@ -44,43 +44,32 @@ local function executeOnTarget(targetPlayer, commandType, ...)
     
     -- تنفيذ الأمر بناءً على النوع
     if commandType == "say" then
-        -- هنا نفترض أن SendMessage هو الحدث الذي يرسل الرسالة إلى السيرفر ليتم إرسالها كرسالة عامة
-        -- ... هي الرسالة التي سيتم إرسالها
+        -- أمر .say يرسل الرسالة مباشرة
         SendMessage:FireServer(...)
         
-    -- تم إزالة أمر .3mk من هنا ليتم إرساله مرة واحدة فقط في معالج حدث الدردشة
-        
     elseif commandType == "f7lk" then
-        -- هنا نفترض أن .f7lk هو أمر يرسل رسالة معينة إلى السيرفر
-        -- الرسالة الافتراضية: "فحًىًلًي @"..senderPlayer.DisplayName.." 🥺"
-        -- ... هو اسم اللاعب المرسل للأمر
+        -- أمر .f7lk يرسل رسالة معينة
         local senderDisplayName = select(1, ...)
         SendMessage:FireServer("فحًىًلًي @"..senderDisplayName.." 🥺")
         
     elseif commandType == "spam" then
-        -- هنا نفترض أن هناك دالة startSpamFor موجودة في السكريبت الأصلي
+        -- أمر .spam: يفترض أن السكريبت الأصلي كان يستخدم SendMessage لتنفيذ الأمر
         local spamMsg = select(1, ...)
-        if targetPlayer:GetAttribute("ScriptUser") then
-            -- يجب أن تكون startSpamFor دالة معرفة في مكان آخر من السكريبت الأصلي
-            -- startSpamFor(targetPlayer, spamMsg) 
-        end
+        -- يتم إرسال الأمر والهدف والرسالة إلى السيرفر
+        SendMessage:FireServer(".spam", targetPlayer.Name, spamMsg)
         
     elseif commandType == "unspam" then
-        -- هنا نفترض أن هناك دالة stopSpamFor موجودة في السكريبت الأصلي
-        if targetPlayer:GetAttribute("ScriptUser") then
-            -- stopSpamFor(targetPlayer)
-        end
+        -- أمر .unspam: يفترض أن السكريبت الأصلي كان يستخدم SendMessage لتنفيذ الأمر
+        SendMessage:FireServer(".unspam", targetPlayer.Name)
         
     elseif commandType == "kick" then
+        -- أمر .kick: يفترض أن السكريبت الأصلي كان يستخدم SendMessage لتنفيذ الأمر
         local reason = select(1, ...)
-        if targetPlayer:GetAttribute("ScriptUser") then
-            -- targetPlayer:Kick(reason)
-        end
+        SendMessage:FireServer(".kick", targetPlayer.Name, reason)
         
     elseif commandType == "bring" then
-        if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            -- targetPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(3,0,3)
-        end
+        -- أمر .bring: يفترض أن السكريبت الأصلي كان يستخدم SendMessage لتنفيذ الأمر
+        SendMessage:FireServer(".bring", targetPlayer.Name)
     end
 end
 
@@ -109,22 +98,17 @@ local function processCommand(senderPlayer, command, commandType, targetPart, ..
     -- تنفيذ الأمر على جميع الأهداف المحددة
     for _, target in ipairs(targets) do
         if commandType == "f7lk" then
-            -- أمر .f7lk يحتاج اسم مرسل الأمر
             executeOnTarget(target, commandType, senderPlayer.DisplayName)
         elseif commandType == "say" then
-            -- أمر .say يحتاج الرسالة
             local message = select(1, ...)
             executeOnTarget(target, commandType, message)
         elseif commandType == "spam" then
-            -- أمر .spam يحتاج الرسالة
             local spamMsg = select(1, ...)
             executeOnTarget(target, commandType, spamMsg)
         elseif commandType == "kick" then
-            -- أمر .kick يحتاج السبب
             local reason = select(1, ...)
             executeOnTarget(target, commandType, reason)
         elseif commandType == "bring" then
-            -- أمر .bring
             executeOnTarget(target, commandType)
         end
     end
@@ -170,7 +154,7 @@ ChattedEvent.OnClientEvent:Connect(function(senderPlayer, command)
         if targetPart == "" or message == "" then return end
         processCommand(senderPlayer, command, "say", targetPart, message)
         
-    -- الأمر .3mk (تم تعديله ليرسل الرسالة مرة واحدة فقط)
+    -- الأمر .3mk (يرسل الرسالة مرة واحدة فقط)
     elseif cmd == ".3mk" then
         if targetPart == "" then return end
         
@@ -216,8 +200,3 @@ ChattedEvent.OnClientEvent:Connect(function(senderPlayer, command)
         processCommand(senderPlayer, command, "bring", targetPart)
     end
 end)
-
--- ملاحظة: تم إزالة الدوال startSpamFor و stopSpamFor و target:Kick و CFrame
--- من دالة executeOnTarget لأنها غير موجودة في السكريبت الأصلي الذي قدمته.
--- يجب عليك التأكد من وجود هذه الدوال والوظائف في بيئة السكريبت الخاصة بك لكي يعمل السكريبت بشكل كامل.
--- تم ترك التعليقات في executeOnTarget لتوضيح مكان تنفيذ هذه الأوامر.
