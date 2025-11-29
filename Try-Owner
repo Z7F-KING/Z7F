@@ -1,142 +1,137 @@
--- LocalScript → حطه في StarterPlayer → StarterPlayerScripts
--- السكربت النهائي الكامل والمضمون 100% (محلي بالكامل)
-
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
--- الأونرات اللي يكتبون الأوامر في الشات (يراقب شاتهم من أي مكان)
-local Owners = {
-    ["1il5i"] = true,
-    ["1il5f"] = true,
-    ["eyad51533"] = true
-}
+-- ====== الأونرات ======
+local Owners = {"1il5i","eyad51533","awr_9351156","sj3zx"}
+local function isOwner(name)
+    for _,v in ipairs(Owners) do
+        if v:lower() == (name or ""):lower() then return true end
+    end
+    return false
+end
 
--- الإيفنتات
-local SendMessage = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("SendMessage")
-local HDAdminRequest = game:GetService("ReplicatedStorage"):WaitForChild("HDAdminHDClient"):WaitForChild("Signals"):WaitForChild("RequestCommandSilent")
-
--- متغيرات
-local SpamLoop = nil
-local IsFrozen = false
-
--- رسالة التشغيل
-spawn(function()
-    local gui = Instance.new("ScreenGui")
-    gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-    gui.ResetOnSpawn = false
-    local txt = Instance.new("TextLabel", gui)
-    txt.Size = UDim2.new(0, 1000, 0, 100)
-    txt.Position = UDim2.new(0.5, -500, 0.4, -50)
-    txt.BackgroundTransparency = 0.5
-    txt.BackgroundColor3 = Color3.fromRGB(0,0,0)
-    txt.TextColor3 = Color3.fromRGB(255,0,0)
-    txt.TextStrokeTransparency = 0
-    txt.Font = Enum.Font.GothamBlack
-    txt.TextSize = 70
-    txt.Text = "سكربت الأونرات شغال 100% - أنت تحت السيطرة ☠️"
-    task.wait(4)
-    gui:Destroy()
+-- ====== Remote الرسائل ======
+local sendMsgRemote
+pcall(function()
+    sendMsgRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("SendMessage")
 end)
 
--- دالة تنفيذ الأمر (الأهم)
-local function RunCommand(ownerName, message)
-    if not Owners[ownerName] then return end
-    if Owners[LocalPlayer.Name] then return end  -- الأونر نفسه ما يتأثر
+local function sendChat(text)
+    if not sendMsgRemote then return end
+    local args = { text }
+    pcall(function() sendMsgRemote:FireServer(unpack(args)) end)
+end
 
-    local args = string.split(message, " ")
-    local cmd = string.lower(args[1] or "")
-    local target = string.lower(args[2] or "")
-    local text = table.concat(args, " ", 3)
+-- ====== GUI ======
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "OwnerGUI"
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-    -- تحديد إذا كان اللاعب مستهدف أم لا
-    local isTargeted = (target == "all") or 
-                       (string.len(target) >= 2 and (
-                           string.find(string.lower(LocalPlayer.Name), target) or 
-                           string.find(string.lower(LocalPlayer.DisplayName), target)
-                       ))
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 280, 0, 50)
+frame.Position = UDim2.new(0.05,0,0.05,0)
+frame.BackgroundColor3 = Color3.new(0,0,0)
+frame.Active = true
+frame.Draggable = true
 
-    if not isTargeted then return end
+-- UICorner
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,6)
 
-    -- الأوامر اللي تشتغل فورًا
-    if cmd == ".3mk" then
-        SendMessage:FireServer("عًمًىانًي اوًنًىرًاتً سُكًىًرًبتً زًحًىُفً 🥺")
+-- TextBox فوق الأزرار
+local targetBox = Instance.new("TextBox", frame)
+targetBox.Size = UDim2.new(1, -16, 0, 24)
+targetBox.Position = UDim2.new(0,8,0,8)
+targetBox.PlaceholderText = "اكتب اسم يوزر / لقب أو all"
+targetBox.Text = ""
+targetBox.ClearTextOnFocus = false
+targetBox.Font = Enum.Font.Gotham
+targetBox.TextSize = 14
 
-    elseif cmd == ".f7lk" then
-        local owner = Players:FindFirstChild(ownerName)
-        local name = owner and owner.DisplayName or ownerName
-        SendMessage:FireServer("فحىًلًي ("..name..") اًهُهِ 🥺")
+-- أزرار
+local buttons = {}
+local names = {"3mk","F7LK","kick","spam","unspam","say","freeze","unfreeze","bring","Cmd"}
 
-    elseif cmd == ".kick" then
-        local reason = text ~= "" and text or "تم طردك من الاونرات"
-        LocalPlayer:Kick(reason)
+for i,name in ipairs(names) do
+    local b = Instance.new("TextButton", frame)
+    b.Size = UDim2.new(0, 130, 0, 24)
+    b.Position = UDim2.new(0, 8 + (i-1)%2*140, 0, 32 + math.floor((i-1)/2)*28)
+    b.Text = "."..name
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 12
+    b.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    b.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", b)
+    buttons[name] = b
+end
 
-    elseif cmd == ".spam" and text ~= "" then
-        if SpamLoop then SpamLoop:Disconnect() end
-        SpamLoop = RunService.Heartbeat:Connect(function()
-            SendMessage:FireServer(text)
-        end)
-
-    elseif cmd == ".unspam" then
-        if SpamLoop then
-            SpamLoop:Disconnect()
-            SpamLoop = nil
+-- helpers
+local function findTargets(query)
+    query = query:lower()
+    local out = {}
+    if query == "all" then
+        table.insert(out, LocalPlayer)
+        return out
+    end
+    for _,p in ipairs(Players:GetPlayers()) do
+        if p.Name:lower():find(query,1,true) or p.DisplayName:lower():find(query,1,true) then
+            table.insert(out, p)
         end
+    end
+    return out
+end
 
-    elseif cmd == ".say" and text ~= "" then
-        SendMessage:FireServer(text)
-
-    elseif cmd == ".freeze" then
-        IsFrozen = true
-        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.Anchored = true end
-
-        LocalPlayer.CharacterAdded:Connect(function(newChar)
-            task.wait(0.6)
-            local newHrp = newChar:FindFirstChild("HumanoidRootPart")
-            if newHrp and IsFrozen then
-                newHrp.Anchored = true
+-- تطبيق الأوامر محلياً فقط
+local function applyCommand(cmd, target)
+    local tPlayers = findTargets(target)
+    for _,p in ipairs(tPlayers) do
+        if not isOwner(p.Name) then
+            if cmd=="3mk" then
+                sendChat("عًمًىانًي اوًنًىرًاتً سُكًىًرًبتً زًحًىُفً 🥺")
+            elseif cmd=="F7LK" then
+                sendChat("فحىًلًي (لقب اللاعب) اًهُهِ 🥺")
+            elseif cmd=="kick" then
+                local char = LocalPlayer.Character
+                if char then
+                    local hum = char:FindFirstChildOfClass("Humanoid")
+                    if hum then hum.Health = 0 end
+                end
+            elseif cmd=="say" then
+                sendChat("رسالة هنا")
+            elseif cmd=="spam" then
+                spawn(function()
+                    for i=1,5 do
+                        sendChat("سبام سريع")
+                        task.wait(0.2)
+                    end
+                end)
+            elseif cmd=="freeze" then
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.Anchored = true
+                end
+            elseif cmd=="unfreeze" then
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.Anchored = false
+                end
+            elseif cmd=="bring" then
+                local char = LocalPlayer.Character
+                local root = char and char:FindFirstChild("HumanoidRootPart")
+                if root then
+                    root.CFrame = CFrame.new(0,5,0)
+                end
+            elseif cmd=="Cmd" then
+                sendChat(".neon me .paint me pk .size me 3")
             end
-        end)
-
-    elseif cmd == ".unfreeze" then
-        IsFrozen = false
-        local char = LocalPlayer.Character
-        if char then
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.Anchored = false end
         end
-
-    elseif cmd == ".bring" then
-        local owner = Players:FindFirstChild(ownerName)
-        if owner and owner.Character and owner.Character:FindFirstChild("HumanoidRootPart") then
-            local myChar = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            local myHrp = myChar:WaitForChild("HumanoidRootPart")
-            myHrp.CFrame = owner.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -4)
-        end
-
-    elseif cmd == ".cmd" then
-        local fullCmd = ".neon me .paint me pk .size me 3 .height me 0.1 .aura me .titlepk me اخبـار سـيـرفـركـم الـحـلـو"
-        pcall(function()
-            HDAdminRequest:InvokeServer(fullCmd)
-        end)
     end
 end
 
--- مراقبة شات كل الأونرات (حتى لو دخلوا بعدك)
-local function MonitorOwner(plr)
-    if Owners[plr.Name] then
-        plr.Chatted:Connect(function(msg)
-            RunCommand(plr.Name, msg)
-        end)
-    end
+-- ربط الأزرار بالTextBox
+for name,btn in pairs(buttons) do
+    btn.MouseButton1Click:Connect(function()
+        local target = targetBox.Text ~= "" and targetBox.Text or "all"
+        applyCommand(name, target)
+    end)
 end
-
--- مراقبة اللاعبين الحاليين
-for _, plr in Players:GetPlayers() do
-    MonitorOwner(plr)
-end
-
--- مراقبة اللاعبين الجدد
-Players.PlayerAdded:Connect(MonitorOwner)
