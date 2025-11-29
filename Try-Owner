@@ -1,1 +1,87 @@
+--// قائمة الأدمنة (اليوزرنيم فقط، مو الديسبلاي نيم)
+local Admins = {
+    "eyad51533",
+    "1il5i",
+    "1il5f",
+    -- أضف يوزرات ثانية هنا إذا تبي
+}
 
+--// الخدمة اللي بتستخدمها عشان ترسل الرسالة/الأمر
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Events = ReplicatedStorage:WaitForChild("Events")
+local SendMessage = Events:WaitForChild("SendMessage")
+
+--// التحقق إذا اللاعب أدمن أو لا
+local function isAdmin(player)
+    for _, adminName in ipairs(Admins) do
+        if player.Name == adminName then
+            return true
+        end
+    end
+    return false
+end
+
+--// دالة الطرد
+local function kickPlayer(targetNameOrDisplay, reason)
+    reason = reason or "تم طردك من السيرفر."
+    
+    local args = {
+        "!kick " .. targetNameOrDisplay,
+        reason
+    }
+    
+    -- FireServer مع unpack عشان يشتغل زي ما تبي بالضبط
+    SendMessage:FireServer(unpack(args))
+end
+
+--// الاستماع للشات من اللاعب المحلي
+game:GetService("Players").LocalPlayer.Chatted:Connect(function(message)
+    local player = game:GetService("Players").LocalPlayer
+    
+    -- لو مو أدمن، ما يشتغل معاه الأمر
+    if not isAdmin(player) then return end
+    
+    -- الأمر لازم يبدأ بـ !kick
+    if message:lower():sub(1, 5) == "!kick" then
+        local rest = message:sub(6):match("^%s*(.-)%s*$") -- يحذف المسافات الزايدة
+        
+        if rest == "" then
+            warn("استخدم: !kick @الاسم أو الديسبلاي [السبب]")
+            return
+        end
+        
+        -- نفصل الاسم عن الرسالة (لو فيه رسالة)
+        local targetString, reason = rest:match("^(.-)%s+(.+)$")
+        if not targetString then
+            targetString = rest
+            reason = nil
+        end
+        
+        -- ندور على اللاعب سواء بالـ Username أو DisplayName
+        local targetPlayer = nil
+        for _, p in ipairs(game.Players:GetPlayers()) do
+            if p.Name:lower():find(targetString:lower(), 1, true) or 
+               p.DisplayName:lower():find(targetString:lower(), 1, true) then
+                targetPlayer = p
+                break
+            end
+        end
+        
+        if not targetPlayer then
+            warn("ما لقيت اللاعب: " .. targetString)
+            return
+        end
+        
+        -- لو اللي بيطرد هو أدمن ثاني، ما نطرده (حماية)
+        if isAdmin(targetPlayer) then
+            warn("ما تقدر تطرد أدمن ثاني يا بطل!")
+            return
+        end
+        
+        -- ننفذ الطرد
+        kickPlayer("@" .. targetPlayer.DisplayName, reason or "تم طردك بواسطة أدمن.")
+        print("تم طرد اللاعب: " .. targetPlayer.DisplayName .. " | السبب: " .. (reason or "بدون سبب"))
+    end
+end)
+
+print("سكربت الأدمن شغال الحين! الأدمنة: eyad51533, 1il5i, 1il5f")
