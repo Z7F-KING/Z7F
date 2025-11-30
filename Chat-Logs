@@ -1,0 +1,166 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local ChatEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChattedEvent")
+
+--============================--
+--  إنشاء الجياوي الأساسية  --
+--============================--
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = player.PlayerGui
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ResetOnSpawn = false
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 400, 0, 250)
+Main.Position = UDim2.new(0.5, -200, 0.5, -125)
+Main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Main.BackgroundTransparency = 0.25
+Main.Active = true
+Main.Draggable = true
+Main.Parent = ScreenGui
+
+-- حواف الجياوي الخارجي
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0,20)
+MainCorner.Parent = Main
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1,0,0,35)
+Title.BackgroundTransparency = 1
+Title.Text = "Z7F | لوق شات"
+Title.TextColor3 = Color3.fromRGB(255,255,255)
+Title.TextScaled = true
+Title.Font = Enum.Font.GothamBold
+Title.Parent = Main
+
+local Scroll = Instance.new("ScrollingFrame")
+Scroll.Size = UDim2.new(1, -20, 1, -55)
+Scroll.Position = UDim2.new(0,10,0,40)
+Scroll.CanvasSize = UDim2.new(0,0,0,0)
+Scroll.ScrollBarThickness = 6
+Scroll.BackgroundTransparency = 1
+Scroll.Parent = Main
+
+local UIList = Instance.new("UIListLayout")
+UIList.Parent = Scroll
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Padding = UDim.new(0,6)
+
+-- زر مسح
+local ClearBtn = Instance.new("TextButton")
+ClearBtn.Size = UDim2.new(0,70,0,25)
+ClearBtn.Position = UDim2.new(1,-80,1,-35)
+ClearBtn.BackgroundColor3 = Color3.fromRGB(60,0,0)
+ClearBtn.Text = "مسح"
+ClearBtn.TextColor3 = Color3.fromRGB(255,255,255)
+ClearBtn.Font = Enum.Font.GothamBold
+ClearBtn.TextSize = 14
+ClearBtn.Parent = Main
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0,15)
+BtnCorner.Parent = ClearBtn
+
+ClearBtn.MouseButton1Click:Connect(function()
+	for _,v in pairs(Scroll:GetChildren()) do
+		if v:IsA("Frame") then v:Destroy() end
+	end
+	Scroll.CanvasSize = UDim2.new(0,0,0,0)
+end)
+
+--============================--
+--      زر Z خارجي           --
+--============================--
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0,40,0,40)
+ToggleBtn.Position = UDim2.new(1,-50,0,10) -- أعلى يمين الشاشة
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0,0,0)
+ToggleBtn.Text = "Z" -- حرف الزر الجديد
+ToggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextScaled = true
+ToggleBtn.Parent = ScreenGui
+
+-- حواف الزر
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0,15)
+ToggleCorner.Parent = ToggleBtn
+
+-- جعل الزر قابل للتحريك
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+
+local visible = true
+
+ToggleBtn.MouseButton1Click:Connect(function()
+	-- تدوير الزر نفسه
+	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local goal = {Rotation = visible and 180 or 0}
+	local tween = TweenService:Create(ToggleBtn, tweenInfo, goal)
+	tween:Play()
+
+	-- تلاشي/ظهور الجياوي
+	local tweenGui = TweenService:Create(Main, TweenInfo.new(0.3), {BackgroundTransparency = visible and 1 or 0.25})
+	tweenGui:Play()
+	Main.Visible = not visible
+	visible = not visible
+end)
+
+--============================--
+--      إضافة لوق جديد       --
+--============================--
+
+local function AddLog(plr, msg)
+	local Log = Instance.new("Frame")
+	Log.Size = UDim2.new(1,-10,0,50)
+	Log.BackgroundColor3 = Color3.fromRGB(20,20,20)
+	Log.BackgroundTransparency = 0.2
+	Log.Parent = Scroll
+
+	local UI = Instance.new("UICorner", Log)
+	UI.CornerRadius = UDim.new(0,12)
+
+	local Img = Instance.new("ImageLabel")
+	Img.Size = UDim2.new(0,40,0,40)
+	Img.Position = UDim2.new(0,10,0,5)
+	Img.BackgroundTransparency = 1
+	Img.Image = "rbxthumb://type=AvatarHeadShot&id="..plr.UserId.."&w=150&h=150"
+	Img.Parent = Log
+
+	local circle = Instance.new("UICorner", Img)
+	circle.CornerRadius = UDim.new(1,0)
+
+	local Text = Instance.new("TextLabel")
+	Text.Size = UDim2.new(1,-70,1,-5)
+	Text.Position = UDim2.new(0,55,0,5)
+	Text.BackgroundTransparency = 1
+	Text.TextXAlignment = Enum.TextXAlignment.Left
+	Text.TextYAlignment = Enum.TextYAlignment.Top
+	Text.TextColor3 = Color3.fromRGB(255,255,255)
+	Text.TextWrapped = true
+	Text.Font = Enum.Font.Gotham
+	Text.TextSize = 14
+	Text.Text = "("..plr.Name..") : "..msg
+	Text.Parent = Log
+
+	Scroll.CanvasSize = UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y + 20)
+end
+
+UIList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	Scroll.CanvasSize = UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y + 20)
+end)
+
+--============================--
+--  مراقبة الريموت واستقبال   --
+--============================--
+
+ChatEvent.OnClientEvent:Connect(function(targetPlayer, message)
+	if typeof(targetPlayer) == "Instance" and targetPlayer:IsA("Player") then
+		AddLog(targetPlayer, message)
+	end
+end)
