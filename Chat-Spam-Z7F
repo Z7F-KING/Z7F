@@ -1,0 +1,178 @@
+-- ميني سبام رسايل شات | Z7F - النسخة النهائية
+local TweenService = game:GetService("TweenService")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "Z7F_ChatSpammer"
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 260, 0, 142)
+MainFrame.Position = UDim2.new(0.5, -130, 0.5, -71)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 13)
+
+-- العنوان مائل لليسار + اسم Z7F
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -80, 0, 36)  -- عشان الأزرار ما تتداخل
+Title.Position = UDim2.new(0, 14, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "سبام رسايل شات | Z7F"
+Title.TextColor3 = Color3.fromRGB(0, 255, 255)
+Title.Font = Enum.Font.GothamBlack
+Title.TextSize = 17
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = MainFrame
+
+-- زر X
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 28, 0, 28)
+CloseBtn.Position = UDim2.new(1, -36, 0, 4)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 55, 85)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.new(1,1,1)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 19
+CloseBtn.Parent = MainFrame
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 9)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- زر _
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 28, 0, 28)
+MinimizeBtn.Position = UDim2.new(1, -68, 0, 4)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+MinimizeBtn.Text = "_"
+MinimizeBtn.TextColor3 = Color3.new(1,1,1)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.TextSize = 26
+MinimizeBtn.Parent = MainFrame
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 9)
+
+-- المحتوى
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, 0, 1, -36)
+Content.Position = UDim2.new(0, 0, 0, 36)
+Content.BackgroundTransparency = 1
+Content.Parent = MainFrame
+
+-- تكست بوكس الرسالة
+local MsgBox = Instance.new("TextBox")
+MsgBox.Size = UDim2.new(0, 230, 0, 38)
+MsgBox.Position = UDim2.new(0.5, -115, 0, 8)
+MsgBox.BackgroundColor3 = Color3.fromRGB(38, 38, 52)
+MsgBox.PlaceholderText = "اكـتـب هـنـا"
+MsgBox.Text = ""
+MsgBox.TextColor3 = Color3.new(1,1,1)
+MsgBox.Font = Enum.Font.Gotham
+MsgBox.TextSize = 17
+MsgBox.Parent = Content
+Instance.new("UICorner", MsgBox).CornerRadius = UDim.new(0, 11)
+
+-- بوكس السرعة (إنجليزي فقط + 0.0)
+local DelayBox = Instance.new("TextBox")
+DelayBox.Size = UDim2.new(0, 74, 0, 38)
+DelayBox.Position = UDim2.new(0, 14, 0, 58)
+DelayBox.BackgroundColor3 = Color3.fromRGB(38, 38, 52)
+DelayBox.Text = "0.0"
+DelayBox.TextColor3 = Color3.fromRGB(220, 220, 220)
+DelayBox.Font = Enum.Font.GothamBold
+DelayBox.TextSize = 19
+DelayBox.Parent = Content
+Instance.new("UICorner", DelayBox).CornerRadius = UDim.new(0, 11)
+
+-- تقييد السرعة للأرقام الإنجليزية فقط
+DelayBox.Focused:Connect(function()
+    if DelayBox.Text == "0.0" then DelayBox.Text = "" end
+end)
+DelayBox:GetPropertyChangedSignal("Text"):Connect(function()
+    DelayBox.Text = DelayBox.Text:gsub("[^0-9%.]", "")
+end)
+
+-- زر التفعيل
+local SpamBtn = Instance.new("TextButton")
+SpamBtn.Size = UDim2.new(0, 140, 0, 38)
+SpamBtn.Position = UDim2.new(1, -154, 0, 58)
+SpamBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+SpamBtn.Text = "تفعيل سبام"
+SpamBtn.TextColor3 = Color3.new(1,1,1)
+SpamBtn.Font = Enum.Font.GothamBold
+SpamBtn.TextSize = 17
+SpamBtn.Parent = Content
+Instance.new("UICorner", SpamBtn).CornerRadius = UDim.new(0, 11)
+
+local spamming = false
+local currentDelay = 0.2
+
+-- تحديث السرعة
+DelayBox.FocusLost:Connect(function()
+    local num = tonumber(DelayBox.Text)
+    if num and num > 0 then
+        currentDelay = num
+    else
+        DelayBox.Text = "0.0"
+        currentDelay = 0.2
+    end
+end)
+
+-- إيقاف تلقائي لو حذفت الرسالة
+MsgBox:GetPropertyChangedSignal("Text"):Connect(function()
+    if spamming and (MsgBox.Text == "" or MsgBox.Text == "اكـتـب هـنـا") then
+        spamming = false
+        SpamBtn.Text = "تفعيل سبام"
+        SpamBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+    end
+end)
+
+-- تصغير كامل
+local min = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    if not min then
+        TweenService:Create(MainFrame, TweenInfo.new(0.28), {Size = UDim2.new(0, 260, 0, 36)}):Play()
+        Content.Visible = false
+        min = true
+    else
+        Content.Visible = true
+        TweenService:Create(MainFrame, TweenInfo.new(0.28), {Size = UDim2.new(0, 260, 0, 142)}):Play()
+        min = false
+    end
+end)
+
+-- تفعيل السبام
+SpamBtn.MouseButton1Click:Connect(function()
+    if MsgBox.Text == "" or MsgBox.Text == "اكـتـب هـنـا" then return end
+
+    spamming = not spamming
+    if spamming then
+        SpamBtn.Text = "إيقاف السبام"
+        SpamBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+
+        spawn(function()
+            while spamming do
+                local d = currentDelay
+                if d < 0.03 then d = 0.03 end
+                if MsgBox.Text == "" then spamming = false break end
+
+                pcall(function()
+                    game:GetService("ReplicatedStorage").Events.SendMessage:FireServer(MsgBox.Text)
+                end)
+                task.wait(d)
+            end
+            if SpamBtn and SpamBtn.Parent then
+                SpamBtn.Text = "تفعيل سبام"
+                SpamBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+            end
+        end)
+    end
+end)
+
+-- إنتر = تفعيل
+MsgBox.FocusLost:Connect(function(enter)
+    if enter and MsgBox.Text ~= "" and MsgBox.Text ~= "اكـتـب هـنـا" then
+        SpamBtn.MouseButton1Click:Fire()
+    end
+end)
+
+print("سبام رسايل شات | Z7F - جاهز للتفجير يا أسطورة")
