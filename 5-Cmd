@@ -54,6 +54,7 @@ mb.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", mb).CornerRadius = UDim.new(0,12)
 
 -- تكست بوكس بدون ظهور TextBox
+
 local skin = Instance.new("TextBox")
 skin.Parent = frame
 skin.Size = UDim2.new(0, 268, 0, 38)
@@ -61,7 +62,7 @@ skin.Position = UDim2.new(0.5, -134, 0, 50)
 skin.BackgroundColor3 = Color3.fromRGB(28, 28, 42)
 skin.PlaceholderText = "كود السكن (فاضي = miri)"
 skin.Text = "" -- نص فاضي تماما
-skin.TextColor3 = Color3.fromRGB(1,1,1)
+skin.TextColor3 = Color3.fromRGB(255,255,255) -- لون أبيض للنص
 skin.Font = Enum.Font.Gotham
 skin.TextSize = 16
 Instance.new("UICorner", skin).CornerRadius = UDim.new(0, 12)
@@ -146,8 +147,8 @@ local function addBtn(txt, func, x, y)
 end
 
 -- صفوف الأزرار تحت التكست بوكس
-addBtn("سـكـن للقريب", function() fire(".char") end, 16, 100)
-addBtn("اسـم للقريبين", function() fire(".titlepk") end, 156, 100)
+addBtn("سكن للقريبين", function() fire(".char") end, 16, 100)
+addBtn("اسم للقريبين", function() fire(".titlepk") end, 156, 100)
 addBtn("تعليق للقريبين", function() fire(".aura") end, 16, 150)
 addBtn("كـلـب للقريبين", function() fire(".dog") end, 156, 150)
 addBtn("ري للقريبين", function() fireSpecial(".re user") end, 16, 200)
