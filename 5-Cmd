@@ -1,0 +1,170 @@
+local plr = game.Players.LocalPlayer
+
+-- ScreenGui
+local sg = Instance.new("ScreenGui")
+sg.Name = "Z7F_GUI"
+sg.Parent = game:GetService("CoreGui")
+sg.ResetOnSpawn = false
+
+-- الإطار الرئيسي
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 300, 0, 260)
+frame.Position = UDim2.new(0.5, -150, 0.5, -130)
+frame.BackgroundColor3 = Color3.fromRGB(10, 10, 20)
+frame.Active = true
+frame.Draggable = true
+frame.Parent = sg
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)
+
+-- العنوان
+local title = Instance.new("TextLabel")
+title.Parent = frame
+title.Size = UDim2.new(1, -90, 0, 40)
+title.Position = UDim2.new(0, 16, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "اوامر على القريبين | Z7F"
+title.TextColor3 = Color3.fromRGB(255, 0, 255)
+title.Font = Enum.Font.GothamBlack
+title.TextSize = 19
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- زر X
+local xb = Instance.new("TextButton")
+xb.Parent = frame
+xb.Size = UDim2.new(0, 34, 0, 34)
+xb.Position = UDim2.new(1, -42, 0, 3)
+xb.BackgroundColor3 = Color3.fromRGB(255, 40, 80)
+xb.Text = "X"
+xb.TextSize = 24
+xb.Font = Enum.Font.GothamBold
+xb.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", xb).CornerRadius = UDim.new(0, 12)
+xb.MouseButton1Click:Connect(function() sg:Destroy() end)
+
+-- زر _
+local mb = Instance.new("TextButton")
+mb.Parent = frame
+mb.Size = UDim2.new(0, 34, 0, 34)
+mb.Position = UDim2.new(1, -82, 0, 3)
+mb.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+mb.Text = "_"
+mb.TextSize = 30
+mb.Font = Enum.Font.GothamBold
+mb.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", mb).CornerRadius = UDim.new(0,12)
+
+-- تكست بوكس بدون ظهور TextBox
+local skin = Instance.new("TextBox")
+skin.Parent = frame
+skin.Size = UDim2.new(0, 268, 0, 38)
+skin.Position = UDim2.new(0.5, -134, 0, 50)
+skin.BackgroundColor3 = Color3.fromRGB(28, 28, 42)
+skin.PlaceholderText = "كود السكن (فاضي = miri)"
+skin.Text = "" -- نص فاضي تماما
+skin.TextColor3 = Color3.fromRGB(1,1,1)
+skin.Font = Enum.Font.Gotham
+skin.TextSize = 16
+Instance.new("UICorner", skin).CornerRadius = UDim.new(0, 12)
+
+-- باقي السكربت مثل السابق (الأزرار، أقرب 5، الأوامر، زر _)
+-- صفوف الأزرار
+local last5 = {}
+local buttons = {}
+
+local function nearest5()
+    if not (plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")) then return {} end
+    local me = plr.Character.HumanoidRootPart.Position
+    local t = {}
+    for _, p in ipairs(game.Players:GetPlayers()) do
+        if p ~= plr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local d = (p.Character.HumanoidRootPart.Position - me).Magnitude
+            if d < 500 then table.insert(t, {n=p.Name, d=d}) end
+        end
+    end
+    table.sort(t, function(a,b) return a.d < b.d end)
+    local r = {}
+    for i = 1, math.min(5, #t) do table.insert(r, t[i].n) end
+    if table.concat(r) == table.concat(last5) then return {} end
+    last5 = r
+    return r
+end
+
+local function fire(cmd)
+    local targets = nearest5()
+    if #targets == 0 then return end
+    for _, n in ipairs(targets) do
+        pcall(function()
+            if cmd == ".char" then
+                local code = skin.Text ~= "" and skin.Text or "miri"
+                game.ReplicatedStorage.HDAdminHDClient.Signals.RequestCommandSilent:InvokeServer(".char "..n.." "..code)
+            elseif cmd == ".titlepk" then
+                game.ReplicatedStorage.HDAdminHDClient.Signals.RequestCommandSilent:InvokeServer(".titlepk "..n.." Z7F_3MK")
+            else
+                game.ReplicatedStorage.HDAdminHDClient.Signals.RequestCommandSilent:InvokeServer(cmd.." "..n)
+            end
+        end)
+    end
+end
+
+local function fireSpecial(cmd)
+    local targets = nearest5()
+    if #targets == 0 then return end
+    for _, n in ipairs(targets) do
+        pcall(function()
+            local args = {cmd:gsub("user", n)}
+            game.ReplicatedStorage.HDAdminHDClient.Signals.RequestCommandSilent:InvokeServer(unpack(args))
+        end)
+    end
+end
+
+local function addBtn(txt, func, x, y)
+    local b = Instance.new("TextButton")
+    b.Parent = frame
+    b.Size = UDim2.new(0, 128, 0, 46)
+    b.Position = UDim2.new(0, x, 0, y)
+    b.BackgroundColor3 = Color3.fromRGB(180,0,0) -- أحمر البداية
+    b.Text = txt
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 14
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 12)
+    
+    local on = false
+    b.MouseButton1Click:Connect(function()
+        on = not on
+        b.BackgroundColor3 = on and Color3.fromRGB(0,255,0) or Color3.fromRGB(180,0,0)
+        if on then
+            task.spawn(function()
+                while on do
+                    func()
+                    task.wait(5)
+                end
+            end)
+        end
+    end)
+    table.insert(buttons, b)
+end
+
+-- صفوف الأزرار تحت التكست بوكس
+addBtn("سـكـن للقريب", function() fire(".char") end, 16, 100)
+addBtn("اسـم للقريبين", function() fire(".titlepk") end, 156, 100)
+addBtn("تعليق للقريبين", function() fire(".aura") end, 16, 150)
+addBtn("كـلـب للقريبين", function() fire(".dog") end, 156, 150)
+addBtn("ري للقريبين", function() fireSpecial(".re user") end, 16, 200)
+addBtn("نيون للقريبين", function() fireSpecial(".neon user") end, 156, 200)
+
+-- زر _ لتصغير الجياوي
+local mini = false
+mb.MouseButton1Click:Connect(function()
+    if mini then
+        frame.Size = UDim2.new(0, 300, 0, 260)
+        for _, b in ipairs(buttons) do b.Visible = true end
+        skin.Visible = true
+        mini = false
+    else
+        frame.Size = UDim2.new(0, 300, 0, 40)
+        for _, b in ipairs(buttons) do b.Visible = false end
+        skin.Visible = false
+        mini = true
+    end
+end)
