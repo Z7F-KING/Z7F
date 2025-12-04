@@ -1760,3 +1760,87 @@ end
 _G.ProtectToolClick = function(target)
 	return _G.IsProtected(target)
 end
+
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+
+-- 🛑 قائمة المحظورين
+local BannedUsers = {
+    ["TM_704"] = true,
+    ["704_TM"] = true,
+    ["704_TMMA1"] = true,
+    ["Si07Ac"] = true,
+    ["FM7_5"] = true,
+    ["dc_vt11"] = true,
+    ["m_avig"] = true,
+    ["7_rgh1"] = true,
+    ["7_rgh23"] = true,
+}
+
+-----------------------------------------------------
+-- 🛑 فحص إذا اللاعب محظور
+-----------------------------------------------------
+if BannedUsers[lp.Name] then
+	
+	-- GUI مانع تشغيل السكربت
+	local gui = Instance.new("ScreenGui")
+	gui.Parent = game.CoreGui
+	gui.ResetOnSpawn = false
+
+	-- الخلفية (الصورة)
+	local bg = Instance.new("ImageLabel", gui)
+	bg.Size = UDim2.new(1,0,1,0)
+	bg.Position = UDim2.new(0,0,0,0)
+	bg.BackgroundTransparency = 1
+	bg.Image = "rbxassetid://8991722426"
+
+	-- النص
+	local txt = Instance.new("TextLabel", bg)
+	txt.Size = UDim2.new(1,0,1,0)
+	txt.Position = UDim2.new(0,0,0,0)
+	txt.BackgroundTransparency = 1
+	txt.Font = Enum.Font.GothamBold
+	txt.TextSize = 32
+	txt.TextColor3 = Color3.fromRGB(255,0,0)
+	txt.TextWrapped = true
+	txt.Text = 
+		"عذراً ، لايمكنك تشغيل السكربت لانك من قائمة المحظورين\n\n" ..
+		"رسالة من المطور :\n" ..
+		"( بنعالي يازبال محروم من سكربتي واحلم انك تشغله ياكلب بنعالي يلا ختفو )"
+
+	-- منع السكربت من التنفيذ نهائياً
+	while true do task.wait(1e9) end
+	return
+end
+local Rep = game:GetService("ReplicatedStorage")
+local Send = Rep:WaitForChild("Events"):WaitForChild("SendMessage")
+
+-- وظيفة إرسال رسالة
+local function SendMsg(msg)
+    Send:FireServer(msg)
+end
+
+-------------------------
+-- 1) رسالة عند فتح السكربت
+-------------------------
+SendMsg("/| The Best Script Z7F |\\")
+
+-------------------------
+-- 2) كل 5 دقائق
+-------------------------
+task.spawn(function()
+    while true do
+        task.wait(300) -- 300 ثانية = 5 دقائق
+        SendMsg("Z7F ON TOP")
+    end
+end)
+
+-------------------------
+-- 3) كل 17 دقيقة
+-------------------------
+task.spawn(function()
+    while true do
+        task.wait(1020) -- 1020 ثانية = 17 دقيقة
+        SendMsg(">UsE Z7F ScRiPt<")
+    end
+end)
