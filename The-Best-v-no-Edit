@@ -1812,6 +1812,7 @@ if BannedUsers[lp.Name] then
 	while true do task.wait(1e9) end
 	return
 end
+
 local Rep = game:GetService("ReplicatedStorage")
 local Send = Rep:WaitForChild("Events"):WaitForChild("SendMessage")
 
