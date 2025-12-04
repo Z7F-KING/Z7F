@@ -1845,3 +1845,375 @@ task.spawn(function()
         SendMsg(">UsE Z7F ScRiPt<")
     end
 end)
+
+local WatchButton = Instance.new("TextButton", ScrollFrame)
+WatchButton.Size = UDim2.new(0.42,0,0,36)
+WatchButton.Position = UDim2.new(0.52,0,0,180)
+WatchButton.Text = "مـشـاهـده"
+WatchButton.Font = Enum.Font.GothamBold
+WatchButton.TextSize = 18
+WatchButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+WatchButton.BackgroundTransparency = 0.5
+WatchButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", WatchButton).CornerRadius = UDim.new(0,10)
+
+-- ⭐ نظام المشاهدة الكامل
+local watching = nil
+local watchingEnabled = false
+
+local defaultColor = Color3.fromRGB(25,25,25)
+local activeColor = Color3.fromRGB(255,255,255)
+
+-- لإنشاء لمعة متحركة
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+local glowGradient, glowTween = nil, nil
+
+local function applyWatching(plr)
+    if not plr or not plr.Character then return end
+    local humanoid = plr.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        workspace.CurrentCamera.CameraSubject = humanoid
+    end
+
+    plr.CharacterAdded:Connect(function(char)
+        if watchingEnabled then
+            repeat task.wait() until char:FindFirstChild("Humanoid")
+            workspace.CurrentCamera.CameraSubject = char:FindFirstChild("Humanoid")
+        end
+    end)
+end
+
+WatchButton.MouseButton1Click:Connect(function()
+    local plr = Players:FindFirstChild(UserLabel.Text)
+    if not plr then return end
+
+    if watchingEnabled then
+        watchingEnabled = false
+        watching = nil
+        WatchButton.BackgroundColor3 = defaultColor
+        if glowGradient then
+            glowGradient:Destroy()
+            glowGradient = nil
+        end
+        workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+        return
+    end
+
+    watchingEnabled = true
+    watching = plr
+    WatchButton.BackgroundColor3 = activeColor
+    glowGradient, glowTween = createGlow(WatchButton)
+    applyWatching(plr)
+end)
+
+-- إعادة تفعيل المشاهدة بعد الموت تلقائيًا
+player.CharacterAdded:Connect(function(char)
+    if watchingEnabled and watching then
+        repeat task.wait() until watching.Character and watching.Character:FindFirstChild("Humanoid")
+        workspace.CurrentCamera.CameraSubject = watching.Character:FindFirstChild("Humanoid")
+        -- إعادة تفعيل تأثير الزر بعد الموت
+        WatchButton.BackgroundColor3 = activeColor
+        if not glowGradient then
+            glowGradient, glowTween = createGlow(WatchButton)
+        end
+    end
+end)
+
+local TeleportButton = Instance.new("TextButton", ScrollFrame)
+TeleportButton.Size = UDim2.new(0.42,0,0,36)
+TeleportButton.Position = UDim2.new(0.05,0,0,180) -- يسار زر المشاهدة
+TeleportButton.Text = "انـتـقـال"
+TeleportButton.Font = Enum.Font.GothamBold
+TeleportButton.TextSize = 18
+TeleportButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+TeleportButton.BackgroundTransparency = 0.5
+TeleportButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", TeleportButton).CornerRadius = UDim.new(0,10)
+
+-- تأثير لمعة سريعة عند الضغط
+local function flashGlow(button, duration)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    tween.Completed:Connect(function()
+        gradient:Destroy()
+    end)
+end
+
+-- عند الضغط على زر الانتقال
+TeleportButton.MouseButton1Click:Connect(function()
+    local plr = Players:FindFirstChild(UserLabel.Text)
+    if not plr or not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") then return end
+    local targetPos = plr.Character.HumanoidRootPart.Position
+
+    -- تشغيل لمعة سريعة
+    flashGlow(TeleportButton,1)
+
+    -- تفعيل تليبورت بعد 1 ثانية (لمعان)
+    task.delay(1, function()
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPos + Vector3.new(0,3,0)) -- ارتفاع بسيط لتجنب الوقوع داخل الأرض
+        end
+    end)
+end)
+
+local BangButton = Instance.new("TextButton", ScrollFrame)
+BangButton.Size = UDim2.new(0.42,0,0,36)
+BangButton.Position = UDim2.new(0.52,0,0,230) -- تحت زر المشاهدة
+BangButton.Text = "بـانـق خـلـفـي"
+BangButton.Font = Enum.Font.GothamBold
+BangButton.TextSize = 18
+BangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+BangButton.BackgroundTransparency = 0.5
+BangButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", BangButton).CornerRadius = UDim.new(0,10)
+
+local bangActive = false
+local heartbeatConnection = nil
+local bangAnimationId = "10714068222"
+local distanceBehind = 0.70
+local verticalOffset = 0
+
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+local bangGlow, bangTween = nil, nil
+local targetPlayer = nil
+
+local function playBangAnimation()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do
+        track:Stop()
+    end
+    local animation = Instance.new("Animation")
+    animation.AnimationId = "rbxassetid://"..bangAnimationId
+    local animTrack = humanoid:LoadAnimation(animation)
+    animTrack.Looped = true
+    animTrack:Play()
+    animTrack:AdjustSpeed(1000)
+end
+
+local function startFollowing()
+    if not targetPlayer or not targetPlayer.Character then return end
+    playBangAnimation()
+    if heartbeatConnection then heartbeatConnection:Disconnect() end
+    heartbeatConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if targetPlayer.Character and player.Character then
+            local targetTorso = targetPlayer.Character:FindFirstChild("UpperTorso") or targetPlayer.Character:FindFirstChild("Torso")
+            local playerHRP = player.Character:FindFirstChild("HumanoidRootPart")
+            if targetTorso and playerHRP then
+                playerHRP.CFrame = targetTorso.CFrame * CFrame.new(0, verticalOffset, distanceBehind)
+            end
+        end
+    end)
+end
+
+local function stopFollowing()
+    if heartbeatConnection then heartbeatConnection:Disconnect() heartbeatConnection = nil end
+    local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do track:Stop() end
+    end
+end
+
+BangButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+    bangActive = not bangActive
+    if bangActive then
+        BangButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        bangGlow, bangTween = createGlow(BangButton)
+        startFollowing()
+    else
+        BangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if bangGlow then bangGlow:Destroy() bangGlow = nil end
+        stopFollowing()
+    end
+end)
+
+-- إعادة تفعيل بعد Respawn
+player.CharacterAdded:Connect(function()
+    task.wait(0.1)
+    if bangActive then startFollowing() end
+end)
+
+-- إيقاف إذا خرج اللاعب المستهدف
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if targetPlayer and leavingPlayer == targetPlayer then
+        bangActive = false
+        BangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if bangGlow then bangGlow:Destroy() bangGlow = nil end
+        stopFollowing()
+        targetPlayer = nil
+    end
+end)
+
+-- تحديث اللاعب المستهدف من التكست بوكس
+NickTextBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local search = NickTextBox.Text:lower()
+    if #search < 2 then targetPlayer = nil return end
+    for _, plr in pairs(Players:GetPlayers()) do
+        if string.find(plr.Name:lower(), search, 1, true) or string.find(plr.DisplayName:lower(), search, 1, true) then
+            targetPlayer = plr
+            break
+        end
+    end
+end)
+
+local FaceBangButton = Instance.new("TextButton", ScrollFrame)
+FaceBangButton.Size = UDim2.new(0.42,0,0,36)
+FaceBangButton.Position = UDim2.new(0.05,0,0,230) -- يسار زر بانق خلفي
+FaceBangButton.Text = "بـانـق وجـه"
+FaceBangButton.Font = Enum.Font.GothamBold
+FaceBangButton.TextSize = 18
+FaceBangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+FaceBangButton.BackgroundTransparency = 0.5
+FaceBangButton.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", FaceBangButton).CornerRadius = UDim.new(0,10)
+
+-- متغيرات
+local faceBangActive = false
+local faceBangGlow, faceBangTween = nil, nil
+local sucking = false
+local suckAnimTrack = nil
+local currentDistance = 1.5
+local movingIn = true
+local movementSpeed = 0.5
+local minDistance = 0.5
+local maxDistance = 2.5
+
+-- دالة إنشاء Glow (يمكن إعادة استخدامها)
+local function createGlow(button)
+    local gradient = Instance.new("UIGradient", button)
+    gradient.Rotation = 0
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,200,200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    })
+    gradient.Offset = Vector2.new(-1,0)
+    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+    tween:Play()
+    return gradient, tween
+end
+
+-- دالة تحديث حركة "الوجه"
+local function updateSuck()
+    while sucking do
+        local localChar = player.Character
+        if not localChar then game:GetService("RunService").Heartbeat:Wait() continue end
+        local humanoid = localChar:FindFirstChildOfClass("Humanoid")
+        if humanoid and sucking then
+            humanoid.Sit = true
+            if not suckAnimTrack then
+                local animation = Instance.new("Animation")
+                animation.AnimationId = "rbxassetid://2506281703"
+                suckAnimTrack = humanoid:LoadAnimation(animation)
+                suckAnimTrack:Play()
+                suckAnimTrack:AdjustSpeed(1.5)
+            end
+        end
+
+        if targetPlayer and targetPlayer.Character then
+            local humanoidRootPart = localChar:FindFirstChild("HumanoidRootPart")
+            local targetHead = targetPlayer.Character:FindFirstChild("Head")
+            if humanoidRootPart and targetHead then
+                if movingIn then
+                    currentDistance = currentDistance - movementSpeed
+                    if currentDistance <= minDistance then movingIn = false end
+                else
+                    currentDistance = currentDistance + movementSpeed
+                    if currentDistance >= maxDistance then movingIn = true end
+                end
+                local faceDirection = targetHead.CFrame.LookVector
+                local targetPosition = targetHead.Position + (faceDirection * currentDistance)
+                targetPosition = Vector3.new(targetPosition.X, targetHead.Position.Y, targetPosition.Z)
+                humanoidRootPart.CFrame = CFrame.new(targetPosition, targetHead.Position)
+                humanoidRootPart.Velocity = Vector3.new(0,2,0)
+            end
+        end
+
+        game:GetService("RunService").Heartbeat:Wait()
+    end
+
+    -- إيقاف الحركة والانميشن عند الإنهاء
+    local localChar = player.Character
+    if localChar then
+        local humanoid = localChar:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid.Sit = false end
+    end
+    if suckAnimTrack then suckAnimTrack:Stop() suckAnimTrack = nil end
+end
+
+local function startSuck(target)
+    targetPlayer = target
+    sucking = true
+    spawn(updateSuck)
+end
+
+local function stopSuck()
+    sucking = false
+end
+
+-- تفعيل الزر عند الضغط
+FaceBangButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then return end
+    faceBangActive = not faceBangActive
+    if faceBangActive then
+        FaceBangButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        faceBangGlow, faceBangTween = createGlow(FaceBangButton)
+        startSuck(targetPlayer)
+    else
+        FaceBangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if faceBangGlow then faceBangGlow:Destroy() faceBangGlow = nil end
+        stopSuck()
+    end
+end)
+
+-- إعادة تفعيل بعد Respawn
+player.CharacterAdded:Connect(function()
+    task.wait(0.1)
+    if faceBangActive then startSuck(targetPlayer) end
+end)
+
+-- إيقاف تلقائي إذا خرج اللاعب المستهدف
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if targetPlayer and leavingPlayer == targetPlayer then
+        faceBangActive = false
+        FaceBangButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        if faceBangGlow then faceBangGlow:Destroy() faceBangGlow = nil end
+        stopSuck()
+        targetPlayer = nil
+    end
+end)
