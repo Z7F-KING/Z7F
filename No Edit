@@ -2040,7 +2040,9 @@ local ProtectedUsers = {
 	["eyad51533_bot123456"] = true,
 	["Rx22177"] = true,
 	["awr_9351156BOT"] = true,
-	["User Here"] = true
+	["Tx_3a"] = true,
+	["nanMrNoHackk"] = true,
+	["volex37"] = true
 }
 
 -----------------------------------------------------
@@ -2215,7 +2217,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- 🔹 رسالة تغيير العنوان (ترسل فور تفعيل السكربت)
 task.spawn(function()
 	local args = {
-		".titlebk me Z7F ON TOP"
+		"Z7F ON TOP"
 	}
 	pcall(function()
 		ReplicatedStorage:WaitForChild("Events"):WaitForChild("SendMessage"):FireServer(unpack(args))
@@ -2514,9 +2516,9 @@ local BannedUsers = {
     ["TM_704"] = true,
     ["704_TM"] = true,
     ["704_TMMA1"] = true,
-    ["Si07Ac"] = true,
-    ["FM7_5"] = true,
-    ["dc_vt11"] = true,
+    ["user here"] = true,
+    ["user here"] = true,
+    ["user here"] = true,
     ["m_avig"] = true,
     ["7_rgh1"] = true,
     ["Jdvdhvsbx"] = true,
