@@ -1,82 +1,0 @@
---// قائمة الأونرات (حط يوزراتك هنا)
-local Owners = {
-    "eyad51533",   -- غيرها بيوزرك
-    "1il5i",   
-    "yourusername3"
-}
-
---// خدمات
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local SendMessage = ReplicatedStorage:WaitForChild("Events"):WaitForChild("SendMessage")
-local LocalPlayer = Players.LocalPlayer
-
---// فحص إذا كان اللاعب أونر أو لا
-local function isOwner(player)
-    for _, owner in ipairs(Owners) do
-        if player.Name:lower() == owner:lower() or player.DisplayName:lower() == owner:lower() then
-            return true
-        end
-    end
-    return false
-end
-
---// دالة إرسال الرسالة
-local function send(msg)
-    local args = { msg }
-    SendMessage:FireServer(unpack(args))
-end
-
---// مراقبة الشات
-Players.PlayerChatted:Connect(function(player, message)
-    if not isOwner(player) then return end -- بس الأونرات يقدرون يستخدمون الأوامر
-
-    local msg = message:lower()
-
-    --// الأمر الأول: .3mk
-    if msg:sub(1, 5) == ".3mk " then
-        local target = message:sub(6) -- اللي بعد .3mk 
-        local targetLower = target:lower()
-
-        -- نتأكد إن الهدف مو من الأونرات (حتى لو all)
-        local shouldExecute = true
-        if targetLower == "all" then
-            shouldExecute = true -- all يشتغل على الكل إلا الأونرات
-        else
-            for _, owner in ipairs(Owners) do
-                if targetLower == owner:lower() or targetLower == ("@"..owner:lower()) then
-                    shouldExecute = false
-                    break
-                end
-            end
-        end
-
-        if shouldExecute and #target >= 2 then
-            send("عًمًىانًي اوًنًىرًاتً سُكًىًرًبتً زًحًىُفً 🥺")
-        end
-
-    --// الأمر الثاني: .f7lk
-    elseif msg:sub(1, 6) == ".f7lk " then
-        local target = message:sub(7)
-        local targetLower = target:lower()
-
-        local shouldExecute = true
-        if targetLower == "all" then
-            shouldExecute = true
-        else
-            for _, owner in ipairs(Owners) do
-                if targetLower == owner:lower() or targetLower == ("@"..owner:lower()) then
-                    shouldExecute = false
-                    break
-                end
-            end
-        end
-
-        if shouldExecute and #target >= 2 then
-            local display = player.DisplayName
-            send("فحىًلًي ("..display..") اًهُهِ 🥺")
-        end
-    end
-end)
-
-print("سكربت الأوامر شغّال | الأونرات فقط يقدرون يستخدمونه")
