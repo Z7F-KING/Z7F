@@ -2423,13 +2423,21 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
 
+-- منع التكرار حتى لو شغل السكربت أكثر من مرة
+if getgenv().Z7F_TargetLoaded then
+    return
+end
+getgenv().Z7F_TargetLoaded = true
+
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Name = "Z7F_GUI"
 
--- ================== أداة الاستهداف الجديدة الفخمة ==================
+-- ================== أداة الاستهداف ==================
 local function CreateTargetTool()
-    if player.Backpack:FindFirstChild("Z7F Target") or (player.Character and player.Character:FindFirstChild("Z7F Target")) then
+    -- منع التكرار في الشنطة + داخل الشخصية
+    if player.Backpack:FindFirstChild("Z7F | استهداف")
+    or (player.Character and player.Character:FindFirstChild("Z7F | استهداف")) then
         return
     end
 
@@ -2438,14 +2446,11 @@ local function CreateTargetTool()
     tool.RequiresHandle = false
     tool.CanBeDropped = false
     tool.ToolTip = "استهداف سريع - Z7F ON TOP"
-    tool.Parent = player.Backpack
 
-    -- الصورة الخاصة في الشنطة (فخمة جدًا)
-    local icon = Instance.new("ImageLabel")
-    icon.Size = UDim2.new(1,0,1,0)
-    icon.BackgroundTransparency = 1
-    icon.Image = "rbxassetid://17487722188"  -- الآيدي اللي طلبت + صورة رهيبة
-    icon.Parent = tool
+    -- 🔥 صورة الأداة في الشنطة بشكل رسمي
+    tool.TextureId = "rbxassetid://17487722188"
+
+    tool.Parent = player.Backpack
 
     tool.Equipped:Connect(function(mouse)
         mouse.Icon = "rbxassetid://17487722188"
@@ -2460,15 +2465,22 @@ local function CreateTargetTool()
             local targetPlr = Players:GetPlayerFromCharacter(char)
             if not targetPlr or targetPlr == player then return end
 
-            -- تحديث الـ GUI الأصلي
-            NickTextBox.Text = targetPlr.Name
-            UserLabel.Text = targetPlr.Name
-            NickLabel.Text = targetPlr.DisplayName
+            -- تحديث بيانات GUI الخارجي لو عندك
+            if NickTextBox then NickTextBox.Text = targetPlr.Name end
+            if UserLabel then UserLabel.Text = targetPlr.Name end
+            if NickLabel then NickLabel.Text = targetPlr.DisplayName end
 
-            local thumb = Players:GetUserThumbnailAsync(targetPlr.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
-            MidImage.Image = thumb
+            local thumb = Players:GetUserThumbnailAsync(
+                targetPlr.UserId,
+                Enum.ThumbnailType.HeadShot,
+                Enum.ThumbnailSize.Size420x420
+            )
 
-            -- إشعار فخم جديد تحت يمين الشاشة
+            if MidImage then
+                MidImage.Image = thumb
+            end
+
+            -- 🔥 إشعار فخم
             local noti = Instance.new("Frame")
             noti.Size = UDim2.new(0, 360, 0, 100)
             noti.Position = UDim2.new(1, 380, 1, -130)
@@ -2477,9 +2489,7 @@ local function CreateTargetTool()
             noti.BorderSizePixel = 0
             noti.Parent = ScreenGui
 
-            local corner = Instance.new("UICorner")
-            corner.CornerRadius = UDim.new(0, 20)
-            corner.Parent = noti
+            Instance.new("UICorner", noti).CornerRadius = UDim.new(0, 20)
 
             local stroke = Instance.new("UIStroke")
             stroke.Thickness = 2
@@ -2487,7 +2497,6 @@ local function CreateTargetTool()
             stroke.Transparency = 0.3
             stroke.Parent = noti
 
-            -- صورة اللاعب دائرية
             local head = Instance.new("ImageLabel")
             head.Size = UDim2.new(0, 70, 0, 70)
             head.Position = UDim2.new(0, 15, 0.5, -35)
@@ -2496,20 +2505,18 @@ local function CreateTargetTool()
             head.Parent = noti
             Instance.new("UICorner", head).CornerRadius = UDim.new(1,0)
 
-            -- النص
             local txt = Instance.new("TextLabel")
             txt.Size = UDim2.new(1, -100, 1, 0)
             txt.Position = UDim2.new(0, 95, 0, 0)
             txt.BackgroundTransparency = 1
-            txt.Text = "تم استهداف الاعب\n@"..targetPlr.DisplayName
-            txt.TextColor3 = Color3.fromRGB(255, 255, 255)
+            txt.Text = "تم استهداف اللاعب\n@"..targetPlr.DisplayName
+            txt.TextColor3 = Color3.fromRGB(255,255,255)
             txt.Font = Enum.Font.GothamBold
             txt.TextSize = 22
             txt.TextXAlignment = Enum.TextXAlignment.Left
             txt.TextYAlignment = Enum.TextYAlignment.Center
             txt.Parent = noti
 
-            -- لمعة ذهبية على النص
             local grad = Instance.new("UIGradient", txt)
             grad.Color = ColorSequence.new{
                 ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 220, 100)),
@@ -2517,40 +2524,43 @@ local function CreateTargetTool()
                 ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 220, 100))
             }
             grad.Offset = Vector2.new(-1,0)
-            TweenService:Create(grad, TweenInfo.new(1.6, Enum.EasingStyle.Linear, -1, true), {Offset = Vector2.new(1,0)}):Play()
+            TweenService:Create(grad, TweenInfo.new(1.6, Enum.EasingStyle.Linear, -1, true),
+            {Offset = Vector2.new(1,0)}):Play()
 
-            -- دخول أنيق من اليمين
-            TweenService:Create(noti, TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Position = UDim2.new(1, -380, 1, -130)
-            }):Play()
+            TweenService:Create(
+                noti,
+                TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+                {Position = UDim2.new(1, -380, 1, -130)}
+            ):Play()
 
-            -- اختفاء بعد 4.5 ثواني
             task.delay(4.5, function()
-                TweenService:Create(noti, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {
-                    Position = UDim2.new(1, 380, 1, -130)
-                }):Play()
+                TweenService:Create(
+                    noti,
+                    TweenInfo.new(0.6, Enum.EasingStyle.Quint),
+                    {Position = UDim2.new(1, 380, 1, -130)}
+                ):Play()
                 task.delay(0.7, function()
                     noti:Destroy()
                 end)
             end)
         end)
     end)
-
-    -- لو مات ورجع = الأداة ترجع له تلقائي
-    player.CharacterAdded:Connect(function()
-        task.wait(1)
-        CreateTargetTool()
-    end)
 end
 
--- تشغيل الأداة فور تشغيل السكربت
+-- عدم إنشاء أداة مرتين بعد الموت
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    CreateTargetTool()
+end)
+
+-- تشغيل الأداة
 CreateTargetTool()
 
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
 
 -- 🛑 قائمة المحظورين
-
 local BannedUsers = {
     ["TM_704"] = true,
     ["704_TM"] = true,
@@ -2592,7 +2602,7 @@ if BannedUsers[lp.Name] then
 	txt.TextSize = 32
 	txt.TextColor3 = Color3.fromRGB(255,0,0)
 	txt.TextWrapped = true
-	txt.Text = 
+	txt.Text =
 		"عذراً ، لايمكنك تشغيل السكربت لانك من قائمة المحظورين\n\n" ..
 		"رسالة من المطور :\n" ..
 		"( بنعالي يازبال محروم من سكربتي واحلم انك تشغله ياكلب بنعالي يلا ختفو )"
@@ -2604,9 +2614,8 @@ end
 
 
 -----------------------------------------------------
--- ✅ إذا لم يكن محظور → فعّل fixMovement مباشرة
+-- ✅ إذا لم يكن محظور → فعّل fixMovement الجديدة
 -----------------------------------------------------
-
 local function fixMovement()
     local char = lp.Character
     if not char then return end
@@ -2618,19 +2627,37 @@ local function fixMovement()
     hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
     hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
 
-    while hum.Parent do
-        hum:ChangeState(Enum.HumanoidStateType.Running)
-        hum.Sit = true
-        task.wait(0.1)
+    local function antiForcedSit()
+        if hum.Sit then
+            if hum:GetState() ~= Enum.HumanoidStateType.Jumping
+            and hum:GetState() ~= Enum.HumanoidStateType.Freefall
+            and hum:GetState() ~= Enum.HumanoidStateType.Swimming then
+                hum.Sit = true
+            end
+        end
     end
+
+    RunService.Heartbeat:Connect(antiForcedSit)
+    hum:GetPropertyChangedSignal("Sit"):Connect(antiForcedSit)
+
+    spawn(function()
+        while hum.Parent do
+            if hum:GetState() ~= Enum.HumanoidStateType.Jumping
+            and hum:GetState() ~= Enum.HumanoidStateType.Freefall
+            and hum:GetState() ~= Enum.HumanoidStateType.Swimming then
+                hum.Sit = true
+            end
+            task.wait(0.0)
+        end
+    end)
 end
 
 lp.CharacterAdded:Connect(function()
-    task.wait(0.5)
+    task.wait(0.0)
     fixMovement()
 end)
 
 if lp.Character then
-    task.wait(0.5)
+    task.wait(0.0)
     fixMovement()
 end
