@@ -1135,9 +1135,10 @@ FreezeButton.MouseButton1Click:Connect(function()
     ReplicatedStorage.Events.SendMessage:FireServer(".unchar")
 end)
 
+-- زر نسخ قوي
 local CopyStrongButton = Instance.new("TextButton", ScrollFrame)
 CopyStrongButton.Size = UDim2.new(0.42,0,0,36)
-CopyStrongButton.Position = UDim2.new(0.05,0,0,380) -- تحت زر Freeze
+CopyStrongButton.Position = UDim2.new(0.05,0,0,380)
 CopyStrongButton.Text = "نـسـخ قـوي"
 CopyStrongButton.Font = Enum.Font.GothamBold
 CopyStrongButton.TextSize = 18
@@ -1150,7 +1151,7 @@ local copyActive = false
 local copyGlow, copyTween = nil, nil
 local copyLoop = nil
 
--- دالة Glow مثل باقي الأزرار
+-- تأثير التوهج
 local function createGlow(button)
     local gradient = Instance.new("UIGradient", button)
     gradient.Rotation = 0
@@ -1160,42 +1161,62 @@ local function createGlow(button)
         ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
     })
     gradient.Offset = Vector2.new(-1,0)
-    local tween = TweenService:Create(gradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Offset = Vector2.new(1,0)})
+
+    local tween = TweenService:Create(
+        gradient,
+        TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true),
+        {Offset = Vector2.new(1,0)}
+    )
+
     tween:Play()
     return gradient, tween
 end
-    -- تكرار إرسال الكود كل 4 ثواني
+
+-- تشغيل النسخ القوي بدون مشاهدة وبفاصل 7 ثواني
+local function startCopyStrong()
+    if not targetPlayer then return end
+    
     copyLoop = game:GetService("RunService").Heartbeat:Connect(function(delta)
         if copyActive then
-            if tick() % 7 < delta then
+            if tick() % 7 < delta then -- 7 ثواني
                 local plrName = targetPlayer.Name
-                local prefix = #plrName >= 5 and string.sub(plrName,1,3) or plrName
+                local prefix = #plrName >= 3 and string.sub(plrName,1,3) or plrName
+                
                 local args = {
-                    ". .neon "..prefix.." .paint "..prefix.." pk .size "..prefix.." 3 .height "..prefix.." 0.1 .aura "..prefix.." .title "..prefix.." \217\133\216\175\217\139\216\185\217\137\217\136\216\179\217\139"
+                    ". .neon "..prefix..
+                    " .paint "..prefix..
+                    " pk .size "..prefix..
+                    " 3 .height "..prefix..
+                    " 0.1 .aura "..prefix..
+                    " .title "..prefix..
+                    " \217\133\216\175\217\139\216\185\217\137\217\136\216\179\217\139"
                 }
+
                 pcall(function()
-                    game:GetService("ReplicatedStorage"):WaitForChild("HDAdminHDClient"):WaitForChild("Signals"):WaitForChild("RequestCommandSilent"):InvokeServer(unpack(args))
+                    game:GetService("ReplicatedStorage")
+                    :WaitForChild("HDAdminHDClient")
+                    :WaitForChild("Signals")
+                    :WaitForChild("RequestCommandSilent")
+                    :InvokeServer(unpack(args))
                 end)
             end
         end
     end)
 end
 
+-- إيقاف النسخ
 local function stopCopyStrong()
     copyActive = false
     if copyGlow then copyGlow:Destroy() copyGlow = nil end
     if copyLoop then copyLoop:Disconnect() copyLoop = nil end
-    -- إعادة الكاميرا للشخص نفسه
-    watchingEnabled = false
-    watching = nil
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChild("Humanoid")
-    end
 end
 
+-- زر تفعيل / تعطيل
 CopyStrongButton.MouseButton1Click:Connect(function()
     if not targetPlayer then return end
+    
     copyActive = not copyActive
+    
     if copyActive then
         CopyStrongButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
         copyGlow, copyTween = createGlow(CopyStrongButton)
@@ -1206,7 +1227,7 @@ CopyStrongButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- إيقاف تلقائي عند خروج اللاعب المستهدف
+-- إيقاف تلقائي عند خروج الهدف
 Players.PlayerRemoving:Connect(function(leavingPlayer)
     if targetPlayer and leavingPlayer == targetPlayer then
         stopCopyStrong()
