@@ -2414,147 +2414,117 @@ end)
 -- ═════════════════════════════════════════
 -- Z7F ON TOP - النسخة المحدثة مع أداة الاستهداف الفخمة
 -- ═════════════════════════════════════════
-
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local CoreGui = game:GetService("CoreGui")
-local player = Players.LocalPlayer
+local lp = Players.LocalPlayer
 
--- منع التكرار حتى لو شغل السكربت أكثر من مرة
-if getgenv().Z7F_TargetLoaded then
+-- 🛑 قائمة المحظورين
+local BannedUsers = {
+    ["TM_704"] = true,
+    ["704_TM"] = true,
+    ["704_TMMA1"] = true,
+    ["nan_dihanix"] = true,
+    ["Si07Ac"] = true,
+    ["33yahya"] = true,
+    ["m_avig"] = true,
+    ["7_rgh1"] = true,
+    ["Jdvdhvsbx"] = true,
+    ["user here 1"] = true,
+    ["user here 2"] = true,
+    ["user here 3"] = true,
+}
+
+-----------------------------------------------------
+-- فحص إذا اللاعب محظور
+-----------------------------------------------------
+if BannedUsers[lp.Name] then
+    local gui = Instance.new("ScreenGui")
+    gui.Parent = game.CoreGui
+    gui.ResetOnSpawn = false
+
+    local bg = Instance.new("ImageLabel", gui)
+    bg.Size = UDim2.new(1,0,1,0)
+    bg.BackgroundTransparency = 1
+    bg.Image = "rbxassetid://8991722426"
+
+    local txt = Instance.new("TextLabel", bg)
+    txt.Size = UDim2.new(1,0,1,0)
+    txt.BackgroundTransparency = 1
+    txt.Font = Enum.Font.GothamBold
+    txt.TextSize = 32
+    txt.TextColor3 = Color3.fromRGB(255,0,0)
+    txt.TextWrapped = true
+    txt.Text =
+        "عذراً ، لايمكنك تشغيل السكربت لانك من قائمة المحظورين\n\n" ..
+        "رسالة من المطور :\n" ..
+        "( بنعالي يازبال محروم من سكربتي واحلم انك تشغله ياكلب بنعالي يلا ختفو )"
+
+    while true do task.wait(1e9) end
     return
 end
-getgenv().Z7F_TargetLoaded = true
 
-local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Name = "Z7F_GUI"
+-----------------------------------------------------
+-- نظام منع التكرار + منع الموت
+-----------------------------------------------------
 
--- ================== أداة الاستهداف ==================
-local function CreateTargetTool()
-    -- منع التكرار في الشنطة + داخل الشخصية
-    if player.Backpack:FindFirstChild("Z7F | استهداف")
-    or (player.Character and player.Character:FindFirstChild("Z7F | استهداف")) then
-        return
+local Fixing = false
+local Connections = {}
+
+local function DisconnectAll()
+    for _, c in pairs(Connections) do
+        if c.Connected then
+            c:Disconnect()
+        end
     end
-
-    local tool = Instance.new("Tool")
-    tool.Name = "Z7F | استهداف"
-    tool.RequiresHandle = false
-    tool.CanBeDropped = false
-    tool.ToolTip = "استهداف سريع - Z7F ON TOP"
-
-    -- 🔥 صورة الأداة في الشنطة بشكل رسمي
-    tool.TextureId = "rbxassetid://17487722188"
-
-    tool.Parent = player.Backpack
-
-    tool.Equipped:Connect(function(mouse)
-        mouse.Icon = "rbxassetid://17487722188"
-
-        mouse.Button1Down:Connect(function()
-            local target = mouse.Target
-            if not target then return end
-
-            local char = target:FindFirstAncestorWhichIsA("Model")
-            if not char then return end
-
-            local targetPlr = Players:GetPlayerFromCharacter(char)
-            if not targetPlr or targetPlr == player then return end
-
-            -- تحديث بيانات GUI الخارجي لو عندك
-            if NickTextBox then NickTextBox.Text = targetPlr.Name end
-            if UserLabel then UserLabel.Text = targetPlr.Name end
-            if NickLabel then NickLabel.Text = targetPlr.DisplayName end
-
-            local thumb = Players:GetUserThumbnailAsync(
-                targetPlr.UserId,
-                Enum.ThumbnailType.HeadShot,
-                Enum.ThumbnailSize.Size420x420
-            )
-
-            if MidImage then
-                MidImage.Image = thumb
-            end
-
-            -- 🔥 إشعار فخم
-            local noti = Instance.new("Frame")
-            noti.Size = UDim2.new(0, 360, 0, 100)
-            noti.Position = UDim2.new(1, 380, 1, -130)
-            noti.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-            noti.BackgroundTransparency = 0.4
-            noti.BorderSizePixel = 0
-            noti.Parent = ScreenGui
-
-            Instance.new("UICorner", noti).CornerRadius = UDim.new(0, 20)
-
-            local stroke = Instance.new("UIStroke")
-            stroke.Thickness = 2
-            stroke.Color = Color3.fromRGB(255, 215, 0)
-            stroke.Transparency = 0.3
-            stroke.Parent = noti
-
-            local head = Instance.new("ImageLabel")
-            head.Size = UDim2.new(0, 70, 0, 70)
-            head.Position = UDim2.new(0, 15, 0.5, -35)
-            head.BackgroundTransparency = 1
-            head.Image = thumb
-            head.Parent = noti
-            Instance.new("UICorner", head).CornerRadius = UDim.new(1,0)
-
-            local txt = Instance.new("TextLabel")
-            txt.Size = UDim2.new(1, -100, 1, 0)
-            txt.Position = UDim2.new(0, 95, 0, 0)
-            txt.BackgroundTransparency = 1
-            txt.Text = "تم استهداف اللاعب\n@"..targetPlr.DisplayName
-            txt.TextColor3 = Color3.fromRGB(255,255,255)
-            txt.Font = Enum.Font.GothamBold
-            txt.TextSize = 22
-            txt.TextXAlignment = Enum.TextXAlignment.Left
-            txt.TextYAlignment = Enum.TextYAlignment.Center
-            txt.Parent = noti
-
-            local grad = Instance.new("UIGradient", txt)
-            grad.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 220, 100)),
-                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 240, 200)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 220, 100))
-            }
-            grad.Offset = Vector2.new(-1,0)
-            TweenService:Create(grad, TweenInfo.new(1.6, Enum.EasingStyle.Linear, -1, true),
-            {Offset = Vector2.new(1,0)}):Play()
-
-            TweenService:Create(
-                noti,
-                TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                {Position = UDim2.new(1, -380, 1, -130)}
-            ):Play()
-
-            task.delay(4.5, function()
-                TweenService:Create(
-                    noti,
-                    TweenInfo.new(0.6, Enum.EasingStyle.Quint),
-                    {Position = UDim2.new(1, 380, 1, -130)}
-                ):Play()
-                task.delay(0.7, function()
-                    noti:Destroy()
-                end)
-            end)
-        end)
-    end)
+    table.clear(Connections)
 end
 
--- عدم إنشاء أداة مرتين بعد الموت
-player.CharacterAdded:Connect(function()
-    task.wait(1)
-    CreateTargetTool()
+local function fixMovement()
+    if Fixing then return end   -- 🔥 يمنع التكرار
+    Fixing = true
+
+    DisconnectAll()
+
+    local char = lp.Character or lp.CharacterAdded:Wait()
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then Fixing = false return end
+
+    hum.AutoRotate = true
+    hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+    hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
+
+    local function antiForcedSit()
+        if hum and hum.Parent then
+            if hum:GetState() ~= Enum.HumanoidStateType.Jumping
+            and hum:GetState() ~= Enum.HumanoidStateType.Freefall
+            and hum:GetState() ~= Enum.HumanoidStateType.Swimming then
+                hum.Sit = true
+            end
+        end
+    end
+
+    Connections["HB"] = RunService.Heartbeat:Connect(antiForcedSit)
+    Connections["Sit"] = hum:GetPropertyChangedSignal("Sit"):Connect(antiForcedSit)
+
+    task.spawn(function()
+        while hum and hum.Parent do
+            antiForcedSit()
+            task.wait(0.05)
+        end
+    end)
+
+    Fixing = false
+end
+
+lp.CharacterAdded:Connect(function()
+    task.wait(0.3)
+    fixMovement()
 end)
 
--- تشغيل الأداة
-CreateTargetTool()
+if lp.Character then
+    task.wait(0.3)
+    fixMovement()
+end
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
