@@ -1164,14 +1164,6 @@ local function createGlow(button)
     tween:Play()
     return gradient, tween
 end
-
-local function startCopyStrong()
-    if not targetPlayer then return end
-    -- تفعيل المشاهدة
-    watchingEnabled = true
-    watching = targetPlayer
-    applyWatching(targetPlayer)
-
     -- تكرار إرسال الكود كل 4 ثواني
     copyLoop = game:GetService("RunService").Heartbeat:Connect(function(delta)
         if copyActive then
