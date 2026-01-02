@@ -2087,7 +2087,8 @@ local ProtectedUsers = {
 	["nanMrNoHackk"] = true,
 	["volex37"] = true,
 	["KWT_20082"] = true,
-	["bot_fraksh1v3"] = true
+	["bot_fraksh1v3"] = true,
+	["moonwe80"] = true
 }
 
 -----------------------------------------------------
