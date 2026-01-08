@@ -1,6 +1,6 @@
 repeat task.wait() until game:IsLoaded()
 
-loadstring(game:HttpGet("https://api.junkie-development.de/api/v1/luascripts/public/9d407fc527ce3c114e75ac578b38db5d0b2bd1acb2d85c9033a78a5dc9b743a9/download"))()
+loadstring(game:HttpGet("https://gist.githubusercontent.com/amroffaads/e2f69fa994180535a4ce5b7333eb7b5e/raw/92712286b8b56f22f13249ffbb6a60a2f60d615b/wephop"))()
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
