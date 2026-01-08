@@ -1,7 +1,4 @@
-do
-    local s = game:HttpGet("https://api.junkie-development.de/api/v1/luascripts/public/9d407fc527ce3c114e75ac578b38db5d0b2bd1acb2d85c9033a78a5dc9b743a9/download")
-    pcall(loadstring(s))
-end
+
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
